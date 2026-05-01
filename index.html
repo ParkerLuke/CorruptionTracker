@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FEC · Foreign Influence Explorer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e8e8e8; min-height: 100vh; }
+
+#header { background: #111; border-bottom: 2px solid #f0e040; padding: 16px 28px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.logo { font-size: 24px; font-weight: 700; color: #f0e040; letter-spacing: 3px; }
+.subtitle { font-size: 11px; color: #888; letter-spacing: 2px; flex: 1; }
+.source-tag { font-size: 10px; color: #444; letter-spacing: 1px; }
+
+#app { padding: 20px 28px; max-width: 1000px; }
+
+input[type=text], select {
+  background: #161616; border: 1px solid #2a2a2a; color: #e8e8e8;
+  padding: 8px 12px; font-size: 13px; border-radius: 4px; outline: none;
+  font-family: 'Courier New', monospace;
+}
+input[type=text]:focus, select:focus { border-color: #555; }
+select { cursor: pointer; }
+select option { background: #1a1a1a; }
+
+.btn { background: #f0e040; color: #000; border: none; border-radius: 4px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; white-space: nowrap; }
+.btn:hover { background: #ffe000; }
+.btn:disabled { background: #2a2a2a; color: #555; cursor: default; }
+.btn-sm { padding: 5px 12px; font-size: 11px; }
+.btn-ghost { background: #1a1a1a; color: #888; border: 1px solid #2a2a2a; border-radius: 3px; padding: 5px 12px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; }
+.btn-ghost:hover { border-color: #555; color: #ccc; }
+.btn-ghost.active { background: #f0e040; color: #000; border-color: #f0e040; font-weight: 700; }
+
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mb8{margin-bottom:8px;} .mb12{margin-bottom:12px;} .mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;}
+
+.mode-bar { display: flex; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.mode-btn { flex: 1; background: #111; color: #555; border: none; border-right: 1px solid #2a2a2a; padding: 10px 8px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; }
+.mode-btn:last-child { border-right: none; }
+.mode-btn.active { background: #1c1c1c; color: #f0e040; font-weight: 700; }
+
+.card { background: #161616; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; }
+.card-hdr { padding: 8px 14px; font-size: 10px; color: #555; letter-spacing: 1px; border-bottom: 1px solid #1e1e1e; }
+
+label { font-size: 10px; color: #555; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 8px 14px; font-size: 10px; color: #555; letter-spacing: 1px; text-align: left; border-bottom: 1px solid #1e1e1e; font-weight: 400; white-space: nowrap; }
+th.r, td.r { text-align: right; }
+tbody tr { border-bottom: 1px solid #181818; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover { background: #1c1c1c; }
+tbody td { padding: 9px 14px; font-size: 12px; vertical-align: middle; }
+td.amt { text-align: right; font-size: 13px; color: #7dd87d; font-weight: 700; }
+td.dim { color: #555; font-size: 11px; text-align: right; }
+td.sm { font-size: 11px; color: #888; }
+
+.sub-row td { background: #111; padding: 6px 14px 6px 34px; font-size: 11px; color: #888; border-bottom: 1px solid #151515; }
+.sub-row td.amt { color: #5cb85c; font-size: 12px; }
+
+.chip-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa; border-radius: 3px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; }
+.chip:hover { border-color: #f0e040; color: #f0e040; }
+
+.res-title { font-size: 16px; color: #f0e040; font-weight: 700; margin-bottom: 3px; }
+.res-meta { font-size: 10px; color: #555; letter-spacing: 1px; margin-bottom: 14px; }
+
+.loading { color: #f0e040; font-size: 12px; letter-spacing: 2px; padding: 20px 0; }
+.error-box { background: #1a0808; border: 1px solid #5c1a1a; border-radius: 4px; padding: 10px 14px; font-size: 12px; color: #e07070; margin-bottom: 14px; }
+.empty { padding: 16px 14px; font-size: 12px; color: #555; }
+
+.badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 1px; margin-left: 6px; vertical-align: middle; display: inline-block; }
+.dem { background: #1a4a8a; color: #fff; }
+.rep { background: #8a1a1a; color: #fff; }
+.oth { background: #444; color: #fff; }
+
+.cpill { display: inline-block; background: #1a2a1a; border: 1px solid #2a4a2a; color: #6dc86d; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; }
+.fmatch { display: inline-block; background: #2a1e00; border: 1px solid #554400; color: #f0c040; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; margin-left: 4px; }
+.nmatch { display: inline-block; background: #1a1a1a; border: 1px solid #2a2a2a; color: #444; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; margin-left: 4px; }
+
+.sum-row { display: flex; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid #1e1e1e; font-size: 12px; }
+.sum-row:last-child { border-bottom: none; }
+
+.tab-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.sort-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+
+.committee-item { padding: 10px 14px; border-bottom: 1px solid #181818; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.committee-item:hover { background: #1e1e1e; }
+
+.footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #1a1a1a; font-size: 10px; color: #2a2a2a; letter-spacing: 1px; line-height: 2; }
+.expand-icon { color: #555; font-size: 10px; margin-right: 6px; display: inline-block; width: 10px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <span class="logo">FEC</span>
+  <span class="subtitle">FOREIGN INFLUENCE &amp; CAMPAIGN FINANCE EXPLORER</span>
+  <span class="source-tag">fec.gov · fara.gov · doj.gov</span>
+</div>
+
+<div id="app">
+
+  <!-- API Key -->
+  <div class="card mb16" style="padding:10px 14px;">
+    <label>FEC API KEY — DEMO_KEY works at 40 req/hr · Free upgrade: api.data.gov/signup → 1,000 req/hr</label>
+    <input type="text" id="apiKeyInput" value="DEMO_KEY" style="width:100%;border:none;background:transparent;padding:4px 0;" />
+  </div>
+
+  <!-- Cycle -->
+  <div class="row mb20">
+    <span style="font-size:11px;color:#555;letter-spacing:1px;">ELECTION CYCLE</span>
+    <div id="cycleBar" class="row" style="gap:6px;"></div>
+  </div>
+
+  <!-- Mode -->
+  <div class="mode-bar">
+    <button class="mode-btn active" onclick="setMode('foreign')">🌐 FOREIGN INFLUENCE</button>
+    <button class="mode-btn" onclick="setMode('pac')">🏛 PAC / COMMITTEE</button>
+    <button class="mode-btn" onclick="setMode('candidate')">👤 CANDIDATE</button>
+  </div>
+
+  <!-- Foreign UI -->
+  <div id="foreignUI">
+    <div class="row mb12">
+      <div style="flex:1;">
+        <label>SELECT COUNTRY OF ORIGIN</label>
+        <select id="countrySelect" style="width:100%;" onchange="onCountryChange()">
+          <option value="">— loading FARA database... —</option>
+        </select>
+      </div>
+      <div style="padding-top:18px;">
+        <button class="btn" onclick="loadForeignInfluence()" id="foreignBtn" disabled>ANALYZE</button>
+      </div>
+    </div>
+    <div class="mb12">
+      <label>QUICK SELECT</label>
+      <div class="chip-bar" id="countryChips"></div>
+    </div>
+    <div id="faraStatus" style="font-size:10px;color:#555;letter-spacing:1px;margin-bottom:14px;"></div>
+  </div>
+
+  <!-- PAC UI -->
+  <div id="pacUI" style="display:none;">
+    <div class="mb8"><label>KNOWN FOREIGN-LINKED PACs</label><div class="chip-bar" id="pacChips"></div></div>
+    <div class="row mb16">
+      <input type="text" id="pacSearch" placeholder="Search PAC name..." style="flex:1;" onkeydown="if(event.key==='Enter')searchPACs()" />
+      <button class="btn" onclick="searchPACs()">SEARCH</button>
+    </div>
+    <div id="pacCommitteeList"></div>
+  </div>
+
+  <!-- Candidate UI -->
+  <div id="candidateUI" style="display:none;">
+    <div class="row mb16">
+      <input type="text" id="candidateSearch" placeholder="Candidate name (e.g. Chuck Schumer, Marco Rubio...)" style="flex:1;" onkeydown="if(event.key==='Enter')searchCandidate()" />
+      <button class="btn" onclick="searchCandidate()">SEARCH</button>
+    </div>
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">LOADING...</div>
+  <div id="errorBox" class="error-box" style="display:none;"></div>
+  <div id="results"></div>
+
+  <div class="footer">
+    SOURCES: api.open.fec.gov (campaign finance) &nbsp;·&nbsp; efile.fara.gov (foreign agent registrations, DOJ) &nbsp;·&nbsp;
+    INDIVIDUAL CONTRIBUTIONS THRESHOLD: $1,000+ &nbsp;·&nbsp; AMOUNTS ARE CYCLE AGGREGATES<br/>
+    NOTE: Foreign nationals cannot legally donate to US federal campaigns. FEC employer matches surface agents registered under FARA who work at US firms.
+  </div>
+</div>
+
+<script>
+const FEC  = "https://api.open.fec.gov/v1";
+const FARA = "https://efile.fara.gov/api/v1";
+
+const CYCLES = [2024,2022,2020,2018,2016];
+const QUICK_COUNTRIES = ["ISRAEL","SAUDI ARABIA","CHINA","UNITED ARAB EMIRATES","TURKEY","RUSSIA","INDIA","UKRAINE","QATAR","SOUTH KOREA","JAPAN","TAIWAN","ARMENIA","GREECE","CUBA","PAKISTAN","AZERBAIJAN"];
+const KNOWN_PACS = [
+  {label:"AIPAC PAC",      id:"C00797159", country:"ISRAEL"},
+  {label:"USINPAC",        id:"C00397463", country:"INDIA"},
+  {label:"Armenian ANCA",  id:"C00101691", country:"ARMENIA"},
+  {label:"Turkish ATAA",   id:"C00395053", country:"TURKEY"},
+  {label:"Cuba CANF PAC",  id:"C00245282", country:"CUBA"},
+];
+
+const S = {
+  mode:"foreign", cycle:2024, sortDir:"desc",
+  expanded:new Set(), activeTab:null, currentResults:null,
+  faraByCountry:{}, faraLoaded:false, faraLoading:false,
+};
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+function init() {
+  // Cycle bar
+  const bar = document.getElementById("cycleBar");
+  CYCLES.forEach(c => {
+    const b = document.createElement("button");
+    b.className="btn-ghost"+(c===S.cycle?" active":"");
+    b.textContent=c; b.dataset.c=c;
+    b.onclick=()=>{S.cycle=c;renderCycleBar();};
+    bar.appendChild(b);
+  });
+  // PAC chips
+  KNOWN_PACS.forEach(p=>{
+    const ch=document.createElement("span");
+    ch.className="chip"; ch.textContent=p.label;
+    ch.onclick=()=>loadPacById(p.id,p.label);
+    document.getElementById("pacChips").appendChild(ch);
+  });
+  // Country quick chips
+  QUICK_COUNTRIES.forEach(c=>{
+    const ch=document.createElement("span");
+    ch.className="chip"; ch.textContent=c;
+    ch.onclick=()=>{
+      document.getElementById("countrySelect").value=c;
+      onCountryChange();
+      loadForeignInfluence();
+    };
+    document.getElementById("countryChips").appendChild(ch);
+  });
+  loadFARAData();
+}
+
+function renderCycleBar(){
+  document.querySelectorAll("#cycleBar .btn-ghost")
+    .forEach(b=>b.classList.toggle("active",parseInt(b.dataset.c)===S.cycle));
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const getKey=()=>document.getElementById("apiKeyInput").value.trim()||"DEMO_KEY";
+const fmt=n=>(n==null||n==="")?"—":"$"+Number(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtDate=d=>{try{return new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch{return d||"—";}};
+const partyBadge=p=>p?`<span class="badge ${p==="DEM"?"dem":p==="REP"?"rep":"oth"}">${p}</span>`:"";
+const setLoad=on=>document.getElementById("loading").style.display=on?"block":"none";
+const setErr=msg=>{const e=document.getElementById("errorBox");e.style.display=msg?"block":"none";if(msg)e.textContent=msg;};
+const clearRes=()=>{document.getElementById("results").innerHTML="";};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function api(url){
+  const r=await fetch(url);
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+function sorted(rows,key){
+  return [...rows].sort((a,b)=>{
+    const av=Number(a[key])||0,bv=Number(b[key])||0;
+    return S.sortDir==="desc"?bv-av:av-bv;
+  });
+}
+
+function toggleSort(){S.sortDir=S.sortDir==="desc"?"asc":"desc";if(S.currentResults)rerender();}
+
+const sortBtn=()=>`<button class="btn-ghost active btn-sm" onclick="toggleSort()">${S.sortDir==="desc"?"▼ HIGH → LOW":"▲ LOW → HIGH"}</button>`;
+const tabBar=(tabs,active,fn)=>`<div class="tab-bar">
+  ${tabs.map(([t,l])=>`<button class="btn-ghost${active===t?" active":""}" onclick="${fn}('${t}')">${l}</button>`).join("")}
+  <div class="sort-right"><span style="font-size:10px;color:#555;letter-spacing:1px;">SORT</span>${sortBtn()}</div>
+</div>`;
+
+// ── Mode ──────────────────────────────────────────────────────────────────────
+function setMode(m){
+  S.mode=m;
+  ["foreign","pac","candidate"].forEach(id=>document.getElementById(id+"UI").style.display=id===m?"block":"none");
+  document.querySelectorAll(".mode-btn").forEach((b,i)=>b.classList.toggle("active",["foreign","pac","candidate"][i]===m));
+  clearRes(); setErr(null);
+  document.getElementById("pacCommitteeList").innerHTML="";
+}
+
+// ── FARA Load ─────────────────────────────────────────────────────────────────
+async function loadFARAData(){
+  if(S.faraLoaded||S.faraLoading)return;
+  S.faraLoading=true;
+  const status=document.getElementById("faraStatus");
+  status.textContent="LOADING FARA DATABASE FROM DOJ...";
+  try{
+    // Load all active registrants
+    const regData=await api(`${FARA}/Registrants/json/Active`);
+    const registrants=(regData?.REGISTRANTS_ACTIVE?.ROW)||[];
+
+    // For each registrant, load their foreign principals to get country
+    // FARA rate limit: 5 req/10s — load in controlled batches
+    const byCountry={};
+    const total=registrants.length;
+    let done=0;
+
+    // Process in batches of 4 with delay
+    for(let i=0;i<registrants.length;i+=4){
+      const batch=registrants.slice(i,i+4);
+      await Promise.all(batch.map(async reg=>{
+        try{
+          const fpData=await api(`${FARA}/ForeignPrincipals/json/Active/${reg.Registration_Number}`);
+          const fps=(fpData?.FOREIGN_PRINCIPALS_ACTIVE?.ROW)||[];
+          const fpsArr=Array.isArray(fps)?fps:[fps];
+          fpsArr.forEach(fp=>{
+            if(!fp||!fp.Country)return;
+            const country=fp.Country.toUpperCase().trim();
+            if(!byCountry[country])byCountry[country]=[];
+            byCountry[country].push({
+              registrant_name:reg.Name,
+              registration_number:reg.Registration_Number,
+              registrant_city:reg.City,
+              registrant_state:reg.State,
+              principal_name:fp.Foreign_Principal||fp.Name||"—",
+              principal_country:country,
+              registration_date:fp.Registration_Date||reg.Registration_Date,
+            });
+          });
+        }catch(e){/* skip */}
+        done++;
+      }));
+      const pct=Math.round(done/total*100);
+      status.textContent=`LOADING FARA DATABASE... ${pct}% (${done}/${total} registrants)`;
+      await sleep(2100); // stay safely under 5 req/10s
+    }
+
+    S.faraByCountry=byCountry;
+    S.faraLoaded=true;
+
+    // Populate dropdown
+    const sel=document.getElementById("countrySelect");
+    sel.innerHTML=`<option value="">— choose a country —</option>`;
+    Object.keys(byCountry).sort().forEach(c=>{
+      const opt=document.createElement("option");
+      opt.value=c; opt.textContent=`${c} (${byCountry[c].length} agents)`;
+      sel.appendChild(opt);
+    });
+
+    const totalAgents=Object.values(byCountry).reduce((a,b)=>a+b.length,0);
+    status.textContent=`✓ FARA LOADED — ${registrants.length} US registrants · ${totalAgents} principal relationships · ${Object.keys(byCountry).length} countries`;
+    document.getElementById("foreignBtn").disabled=false;
+  }catch(e){
+    status.textContent=`⚠ FARA load error: ${e.message}. You can still select a quick country.`;
+    // Populate with quick countries as fallback
+    const sel=document.getElementById("countrySelect");
+    sel.innerHTML=`<option value="">— choose a country —</option>`;
+    QUICK_COUNTRIES.forEach(c=>{
+      const opt=document.createElement("option");
+      opt.value=c; opt.textContent=c;
+      sel.appendChild(opt);
+    });
+    document.getElementById("foreignBtn").disabled=false;
+  }
+  S.faraLoading=false;
+}
+
+function onCountryChange(){
+  document.getElementById("foreignBtn").disabled=!document.getElementById("countrySelect").value;
+}
+
+// ── Foreign Influence Analysis ────────────────────────────────────────────────
+async function loadForeignInfluence(){
+  const country=document.getElementById("countrySelect").value.trim().toUpperCase();
+  if(!country)return;
+  S.expanded=new Set(); S.activeTab="agents";
+  clearRes(); setErr(null); setLoad(true);
+
+  try{
+    const agents=(S.faraByCountry[country])||[];
+
+    // Cross-reference top agents against FEC by employer name
+    const agentNames=[...new Set(agents.map(a=>a.registrant_name).filter(Boolean))].slice(0,6);
+    const fecMatches={};
+    for(const name of agentNames){
+      try{
+        const short=name.split(/\s+/).slice(0,3).join(" ");
+        const d=await api(`${FEC}/schedules/schedule_a/?contributor_employer=${encodeURIComponent(short)}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=20&is_individual=true&api_key=${getKey()}`);
+        if(d.results?.length) fecMatches[name]=d.results;
+        await sleep(250);
+      }catch(e){}
+    }
+
+    // Linked PACs for this country
+    const linkedPacs=KNOWN_PACS.filter(p=>p.country===country);
+    const pacData=[];
+    for(const pac of linkedPacs){
+      try{
+        const d=await api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=50&api_key=${getKey()}`);
+        if(d.results?.length) pacData.push({pac,rows:d.results});
+        await sleep(250);
+      }catch(e){}
+    }
+
+    // Indiv donors whose employer matches agent names
+    const indivMatches=[];
+    Object.values(fecMatches).flat().forEach(r=>{
+      indivMatches.push({
+        name:r.contributor_name||"—",
+        employer:r.contributor_employer||"—",
+        occupation:r.contributor_occupation||"—",
+        state:r.contributor_state||"—",
+        amount:Number(r.contribution_receipt_amount)||0,
+        date:r.contribution_receipt_date,
+        candidate:r.committee?.name||"",
+      });
+    });
+
+    S.currentResults={type:"foreign",country,agents,fecMatches,indivMatches,pacData};
+    rerender();
+  }catch(e){setErr("Error: "+e.message);}
+  setLoad(false);
+}
+
+// ── PAC ───────────────────────────────────────────────────────────────────────
+async function searchPACs(){
+  const q=document.getElementById("pacSearch").value.trim();
+  if(!q)return;
+  setLoad(true); setErr(null); clearRes();
+  document.getElementById("pacCommitteeList").innerHTML="";
+  try{
+    const data=await api(`${FEC}/committees/?q=${encodeURIComponent(q)}&committee_type=O&committee_type=N&committee_type=Q&committee_type=V&committee_type=W&per_page=20&api_key=${getKey()}`);
+    if(!data.results?.length){setErr("No committees found.");}
+    else{
+      document.getElementById("pacCommitteeList").innerHTML=`<div class="card mb16"><div class="card-hdr">SELECT COMMITTEE</div>`+
+        data.results.map(c=>`<div class="committee-item" onclick="loadPacById('${c.committee_id}','${(c.name||"").replace(/'/g,"\\'")}')">
+          <div><div style="color:#ddd;font-size:13px;">${c.name||"—"}</div>
+          <div style="font-size:10px;color:#555;margin-top:2px;">${c.committee_id} · ${c.state||""} · ${c.committee_type_full||""}</div></div>
+          <span style="font-size:10px;color:#f0e040;">SELECT →</span>
+        </div>`).join("")+`</div>`;
+    }
+  }catch(e){setErr("API error: "+e.message);}
+  setLoad(false);
+}
+
+async function loadPacById(id,name){
+  document.getElementById("pacCommitteeList").innerHTML="";
+  S.activeTab="disbursements"; S.expanded=new Set();
+  setLoad(true); setErr(null); clearRes();
+  try{
+    const [disbData,indivData]=await Promise.all([
+      api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
+      api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`)
+    ]);
+    S.currentResults={type:"pac",committee_id:id,name,disbRows:disbData.results||[],indivRows:aggIndiv(indivData.results||[])};
+    rerender();
+  }catch(e){setErr("API error: "+e.message);}
+  setLoad(false);
+}
+
+// ── Candidate ─────────────────────────────────────────────────────────────────
+async function searchCandidate(){
+  const q=document.getElementById("candidateSearch").value.trim();
+  if(!q)return;
+  setLoad(true); setErr(null); clearRes(); S.expanded=new Set();
+  try{
+    const candData=await api(`${FEC}/candidates/search/?q=${encodeURIComponent(q)}&election_year=${S.cycle}&per_page=20&api_key=${getKey()}`);
+    if(!candData.results?.length){setErr("No candidates found.");setLoad(false);return;}
+    const cand=candData.results[0];
+    const [pacData,indivData]=await Promise.all([
+      api(`${FEC}/schedules/schedule_a/by_contributor/?candidate_id=${cand.candidate_id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
+      api(`${FEC}/schedules/schedule_a/?candidate_id=${cand.candidate_id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`)
+    ]);
+    S.activeTab="pac";
+    S.currentResults={type:"candidate",candidate:cand,pacRows:pacData.results||[],indivRows:aggIndiv(indivData.results||[])};
+    rerender();
+  }catch(e){setErr("API error: "+e.message);}
+  setLoad(false);
+}
+
+function aggIndiv(rows){
+  const map={};
+  rows.forEach(r=>{
+    const k=r.contributor_name||"UNKNOWN";
+    if(!map[k]) map[k]={name:k,employer:r.contributor_employer,occupation:r.contributor_occupation,state:r.contributor_state,total:0,txns:[]};
+    map[k].total+=Number(r.contribution_receipt_amount)||0;
+    map[k].txns.push({amount:r.contribution_receipt_amount,date:r.contribution_receipt_date,memo:r.memo_text});
+  });
+  return Object.values(map);
+}
+
+// ── Rerender ──────────────────────────────────────────────────────────────────
+function rerender(){
+  const r=S.currentResults; if(!r)return;
+  if(r.type==="foreign") renderForeign(r);
+  else if(r.type==="pac") renderPac(r);
+  else renderCandidate(r);
+}
+
+// ── Foreign ───────────────────────────────────────────────────────────────────
+function renderForeign(r){
+  const indivSorted=sorted(r.indivMatches,"amount");
+  const pacFlat=[];
+  r.pacData.forEach(({pac,rows})=>rows.forEach(row=>pacFlat.push({pac:pac.label,recipient:row.recipient_name||"—",amount:Number(row.total)||0,count:row.count})));
+  const pacSorted=sorted(pacFlat,"amount");
+
+  const tabs=[["agents","FARA AGENTS"],["indiv","INDIVIDUAL DONORS $1k+"],["pacs","LINKED PAC DISBURSEMENTS"]];
+  let html=`
+    <div class="res-title">🌐 ${r.country}</div>
+    <div class="res-meta">FOREIGN INFLUENCE ANALYSIS · CYCLE ${S.cycle} · ${r.agents.length} FARA REGISTERED AGENTS · ${r.indivMatches.length} INDIVIDUAL DONOR MATCHES · ${pacFlat.length} PAC DISBURSEMENTS</div>
+    ${tabBar(tabs,S.activeTab,"setForeignTab")}`;
+
+  if(S.activeTab==="agents"){
+    html+=`<div class="card"><table>
+      <thead><tr><th>US REGISTRANT (AGENT)</th><th>FOREIGN PRINCIPAL</th><th>COUNTRY</th><th>FEC MATCH</th></tr></thead><tbody>`;
+    if(!r.agents.length) html+=`<tr><td colspan="4" class="empty">No FARA registrants found for ${r.country}. The FARA database may still be loading, or there are no active registrants for this country.</td></tr>`;
+    r.agents.forEach(a=>{
+      const hasFec=!!r.fecMatches[a.registrant_name];
+      html+=`<tr>
+        <td><div style="color:#ddd;">${a.registrant_name}</div><div style="font-size:10px;color:#555;margin-top:2px;">${a.registrant_city||""} ${a.registrant_state||""}</div></td>
+        <td class="sm">${a.principal_name}</td>
+        <td><span class="cpill">${r.country}</span></td>
+        <td>${hasFec?`<span class="fmatch">✓ FEC MATCH</span>`:`<span class="nmatch">NO MATCH</span>`}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+
+  if(S.activeTab==="indiv"){
+    html+=`<div class="card"><table>
+      <thead><tr><th>DONOR NAME</th><th>EMPLOYER (FARA-LINKED FIRM)</th><th>OCCUPATION</th><th>STATE</th><th class="r">AMOUNT</th><th>DATE</th></tr></thead><tbody>`;
+    if(!indivSorted.length) html+=`<tr><td colspan="6" class="empty">No individual donor matches found. FARA employer cross-reference requires a real API key for best results.</td></tr>`;
+    indivSorted.forEach(row=>{
+      html+=`<tr>
+        <td style="color:#ddd;">${row.name}</td>
+        <td class="sm">${row.employer}</td>
+        <td class="sm">${row.occupation}</td>
+        <td class="sm">${row.state}</td>
+        <td class="amt">${fmt(row.amount)}</td>
+        <td class="sm">${fmtDate(row.date)}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+
+  if(S.activeTab==="pacs"){
+    html+=`<div class="card"><table>
+      <thead><tr><th>PAC (COUNTRY-LINKED)</th><th>RECIPIENT</th><th class="r">AMOUNT</th><th class="r">TXNS</th></tr></thead><tbody>`;
+    if(!pacSorted.length) html+=`<tr><td colspan="4" class="empty">No linked PAC data for ${r.country} in ${S.cycle}.</td></tr>`;
+    pacSorted.forEach(row=>{
+      html+=`<tr>
+        <td class="sm">${row.pac}</td>
+        <td style="color:#ddd;">${row.recipient}</td>
+        <td class="amt">${fmt(row.amount)}</td>
+        <td class="dim">${row.count||"—"}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+
+  document.getElementById("results").innerHTML=html;
+}
+
+function setForeignTab(t){S.activeTab=t;rerender();}
+
+// ── PAC ───────────────────────────────────────────────────────────────────────
+function renderPac(r){
+  const disbRows=sorted(r.disbRows,"total");
+  const indivRows=sorted(r.indivRows,"total");
+  const tabs=[["disbursements","CANDIDATE DISBURSEMENTS"],["individuals","INDIVIDUAL DONORS $1k+"],["summary","COMMITTEE TOTALS"]];
+  let html=`
+    <div class="res-title">${r.name}</div>
+    <div class="res-meta">${r.committee_id} · CYCLE ${S.cycle}</div>
+    ${tabBar(tabs,S.activeTab,"setPacTab")}`;
+
+  if(S.activeTab==="disbursements"){
+    html+=`<div class="card"><table>
+      <thead><tr><th>RECIPIENT</th><th class="r">AMOUNT</th><th class="r">TXNS</th></tr></thead><tbody>`;
+    if(!disbRows.length) html+=`<tr><td colspan="3" class="empty">No itemized disbursements found for this cycle.</td></tr>`;
+    disbRows.forEach(row=>html+=`<tr>
+      <td><div style="color:#ddd;">${row.recipient_name||"—"}</div><div style="font-size:10px;color:#555;">${row.recipient_id||""}</div></td>
+      <td class="amt">${fmt(row.total)}</td><td class="dim">${row.count||"—"}</td></tr>`);
+    html+=`</tbody></table></div>`;
+  }
+  if(S.activeTab==="individuals") html+=indivTable(indivRows);
+  if(S.activeTab==="summary"){
+    html+=`<div id="sumArea"><div class="card"><div class="empty" style="color:#555;">Loading...</div></div></div>`;
+    loadSum(r.committee_id);
+  }
+  document.getElementById("results").innerHTML=html;
+}
+
+function setPacTab(t){S.activeTab=t;rerender();}
+
+async function loadSum(id){
+  try{
+    const data=await api(`${FEC}/committee/${id}/totals/?cycle=${S.cycle}&api_key=${getKey()}`);
+    const s=data.results?.[0];
+    if(!s){document.getElementById("sumArea").innerHTML=`<div class="card"><div class="empty">No summary data.</div></div>`;return;}
+    document.getElementById("sumArea").innerHTML=`<div class="card">`+
+      [["Total Raised",s.receipts],["Total Spent",s.disbursements],["Cash on Hand",s.cash_on_hand_end_period],
+       ["Contributions to Candidates",s.contributions_candidates],["Independent Expenditures",s.independent_expenditures],
+       ["Transfers In",s.transfers_from_affiliated],["Debts Owed",s.debts_owed_by_committee]]
+      .map(([l,v])=>`<div class="sum-row"><span style="color:#888;">${l}</span><span style="color:#7dd87d;font-weight:700;">${fmt(v)}</span></div>`).join("")+`</div>`;
+  }catch(e){document.getElementById("sumArea").innerHTML=`<div class="error-box">Summary error: ${e.message}</div>`;}
+}
+
+// ── Candidate ─────────────────────────────────────────────────────────────────
+function renderCandidate(r){
+  const cand=r.candidate;
+  const pacRows=sorted(r.pacRows,"total");
+  const indivRows=sorted(r.indivRows,"total");
+  const tabs=[["pac","PAC CONTRIBUTIONS"],["individuals","INDIVIDUAL DONORS $1k+"]];
+  let html=`
+    <div class="res-title">${cand.name}${partyBadge(cand.party)}</div>
+    <div class="res-meta">${cand.candidate_id} · ${cand.office_full||""} · ${cand.state||""} · CYCLE ${S.cycle}</div>
+    ${tabBar(tabs,S.activeTab,"setCandTab")}`;
+  if(S.activeTab==="pac"){
+    html+=`<div class="card"><table>
+      <thead><tr><th>CONTRIBUTOR / PAC</th><th class="r">TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
+    if(!pacRows.length) html+=`<tr><td colspan="3" class="empty">No PAC contribution data found.</td></tr>`;
+    pacRows.forEach(row=>html+=`<tr>
+      <td style="color:#ddd;">${row.contributor_name||"—"}</td>
+      <td class="amt">${fmt(row.total)}</td><td class="dim">${row.count||"—"}</td></tr>`);
+    html+=`</tbody></table></div>`;
+  }
+  if(S.activeTab==="individuals") html+=indivTable(indivRows);
+  document.getElementById("results").innerHTML=html;
+}
+
+function setCandTab(t){S.activeTab=t;rerender();}
+
+// ── Individual donors table (shared) ─────────────────────────────────────────
+function indivTable(rows){
+  let html=`<div class="card"><table>
+    <thead><tr><th>DONOR</th><th>EMPLOYER / OCCUPATION</th><th class="r">CYCLE TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
+  if(!rows.length) html+=`<tr><td colspan="4" class="empty">No individual contributions ≥ $1,000 found. Try a real API key if on DEMO_KEY.</td></tr>`;
+  rows.forEach((row,i)=>{
+    const key="d_"+i, exp=S.expanded.has(key), multi=row.txns?.length>1;
+    html+=`<tr class="${multi?"click":""}" onclick="${multi?`toggleExp('${key}')`:""}">
+      <td><span class="expand-icon">${multi?(exp?"▼":"▶"):" "}</span><span style="color:#ddd;">${row.name}</span>
+        <div style="font-size:10px;color:#555;margin-left:16px;">${row.state||""}</div></td>
+      <td class="sm">${row.employer||"—"}<br/><span style="color:#555;">${row.occupation||""}</span></td>
+      <td class="amt">${fmt(row.total)}</td>
+      <td class="dim">${row.txns?.length||1}</td>
+    </tr>`;
+    if(exp&&row.txns) row.txns.forEach(t=>{
+      html+=`<tr class="sub-row">
+        <td colspan="2" style="padding-left:38px;">${fmtDate(t.date)}${t.memo?" · "+t.memo:""}</td>
+        <td class="amt">${fmt(t.amount)}</td><td></td></tr>`;
+    });
+  });
+  return html+`</tbody></table></div>`;
+}
+
+function toggleExp(key){S.expanded.has(key)?S.expanded.delete(key):S.expanded.add(key);rerender();}
+
+// ── Go ────────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
