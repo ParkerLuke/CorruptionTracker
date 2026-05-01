@@ -149,7 +149,7 @@ td.name{color:#e8e8e8;}
 
   <!-- PAC UI -->
   <div id="pacUI" style="display:none;">
-    <div class="mb8"><label>KNOWN FOREIGN-LINKED PACs — CLICK TO LOAD IMMEDIATELY</label><div class="chip-bar" id="pacChips"></div></div>
+    <div class="mb8"><label>QUICK LOAD — CLICK ANY PAC TO LOAD DATA IMMEDIATELY</label><div class="chip-bar" id="pacChips"></div></div>
     <div class="row mb16">
       <input type="text" id="pacSearch" placeholder="Search PAC name..." style="flex:1;" onkeydown="if(event.key==='Enter')searchPACs()"/>
       <button class="btn" onclick="searchPACs()">SEARCH</button>
@@ -183,18 +183,34 @@ const CYCLES = [2024,2022,2020,2018,2016];
 
 // Updated and expanded PAC list with correct IDs
 const KNOWN_PACS = [
-  // Israel
+  // ── Top Domestic PACs by 2024 spending ──
+  {label:"ActBlue",              id:"C00401224", country:"",      note:"Democratic fundraising hub — $3.79B disbursed"},
+  {label:"WinRed",               id:"C00694323", country:"",      note:"Republican fundraising hub — $1.68B disbursed"},
+  {label:"Senate Leadership Fund",id:"C00571703",country:"",      note:"Republican Super PAC — Senate"},
+  {label:"Senate Majority PAC",  id:"C00484642", country:"",      note:"Democratic Super PAC — Senate"},
+  {label:"House Majority PAC",   id:"C00497796", country:"",      note:"Democratic Super PAC — House"},
+  {label:"Congressional Leadership Fund",id:"C00504530",country:"",note:"Republican Super PAC — House"},
+  {label:"Future Forward PAC",   id:"C00747030", country:"",      note:"Democratic Super PAC — Presidential"},
+  {label:"EMILY's List",         id:"C00193433", country:"",      note:"Pro-choice Democratic women"},
+  {label:"Club for Growth",      id:"C00432674", country:"",      note:"Conservative — anti-tax"},
+  {label:"NRA Political Victory Fund",id:"C00053553",country:"",  note:"National Rifle Association PAC"},
+  {label:"Teamsters PAC",        id:"C00005359", country:"",      note:"International Brotherhood of Teamsters"},
+  {label:"SEIU COPE",            id:"C00004036", country:"",      note:"Service Employees International Union"},
+  {label:"Everytown for Gun Safety",id:"C00568444",country:"",    note:"Gun control Super PAC"},
+  {label:"Koch Industries PAC",  id:"C00236489", country:"",      note:"Koch network — libertarian/conservative"},
+  {label:"Priorities USA Action",id:"C00495861", country:"",      note:"Democratic Super PAC — Presidential"},
+  {label:"American Crossroads",  id:"C00487363", country:"",      note:"Rove-aligned Republican Super PAC"},
+  {label:"NARAL Pro-Choice",     id:"C00380618", country:"",      note:"Abortion rights PAC"},
+  {label:"Planned Parenthood",   id:"C00343012", country:"",      note:"Planned Parenthood Action Fund"},
+  {label:"NEA Fund",             id:"C00003251", country:"",      note:"National Education Association"},
+  {label:"AFL-CIO COPE",         id:"C00000208", country:"",      note:"AFL-CIO labor federation"},
+  // ── Foreign-linked PACs ──
   {label:"AIPAC PAC",            id:"C00797670", country:"ISRAEL",       note:"Direct contributions PAC"},
   {label:"United Democracy Proj",id:"C00799031", country:"ISRAEL",       note:"AIPAC Super PAC — indep. expenditures"},
-  // India
   {label:"USINPAC",              id:"C00397463", country:"INDIA",        note:"US-India PAC"},
-  // Armenia
   {label:"ANCA PAC",             id:"C00101691", country:"ARMENIA",      note:"Armenian National Committee"},
-  // Turkey
   {label:"Turkish Coalition PAC",id:"C00395053", country:"TURKEY",       note:"Turkish-American PAC"},
-  // Cuba
   {label:"CANF PAC",             id:"C00245282", country:"CUBA",         note:"Cuban-American National Foundation"},
-  // Greece
   {label:"Hellenic PAC",         id:"C00386524", country:"GREECE",       note:"American Hellenic PAC"},
 ];
 
@@ -217,12 +233,32 @@ function init(){
     bar.appendChild(b);
   });
 
-  KNOWN_PACS.forEach(p=>{
+  const pacChipsEl=document.getElementById("pacChips");
+  // Domestic group
+  const domLabel=document.createElement("div");
+  domLabel.style.cssText="width:100%;font-size:10px;color:#666;letter-spacing:1px;margin-bottom:4px;margin-top:2px;";
+  domLabel.textContent="TOP DOMESTIC PACs BY 2024 SPENDING";
+  pacChipsEl.appendChild(domLabel);
+  KNOWN_PACS.filter(p=>!p.country).forEach(p=>{
     const ch=document.createElement("span");
     ch.className="chip";
-    ch.innerHTML=`${p.label} <span style="color:#666;font-size:10px;">(${p.country})</span>`;
+    ch.textContent=p.label;
+    ch.title=p.note;
     ch.onclick=()=>loadPacById(p.id,p.label,p.note,p.country);
-    document.getElementById("pacChips").appendChild(ch);
+    pacChipsEl.appendChild(ch);
+  });
+  // Foreign group
+  const forLabel=document.createElement("div");
+  forLabel.style.cssText="width:100%;font-size:10px;color:#666;letter-spacing:1px;margin-bottom:4px;margin-top:10px;";
+  forLabel.textContent="FOREIGN-LINKED PACs";
+  pacChipsEl.appendChild(forLabel);
+  KNOWN_PACS.filter(p=>p.country).forEach(p=>{
+    const ch=document.createElement("span");
+    ch.className="chip";
+    ch.innerHTML=`${p.label} <span style="color:#555;font-size:10px;">(${p.country})</span>`;
+    ch.title=p.note;
+    ch.onclick=()=>loadPacById(p.id,p.label,p.note,p.country);
+    pacChipsEl.appendChild(ch);
   });
 
   QUICK_COUNTRIES.forEach(c=>{
@@ -372,12 +408,19 @@ async function loadForeignInfluence(){
     const pacResults=[];
     for(const pac of linkedPacs){
       try{
-        const [disbData,ieData]=await Promise.all([
-          api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
-          api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
+        const [contribH,contribS,ieData]=await Promise.all([
+          api(`${FEC}/schedules/schedule_b/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=H&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+          api(`${FEC}/schedules/schedule_b/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=S&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+          api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&sort=-total&api_key=${getKey()}`).catch(()=>({results:[]})),
         ]);
-        pacResults.push({pac, disbRows:disbData.results||[], ieRows:ieData.results||[]});
-        await sleep(250);
+        const disbRows=[...(contribH.results||[]),...(contribS.results||[])].map(r=>({
+          recipient_name:r.recipient_name,
+          recipient_id:r.recipient_committee_id,
+          total:r.disbursement_amount,
+          count:1,
+        }));
+        pacResults.push({pac, disbRows, ieRows:ieData.results||[]});
+        await sleep(300);
       }catch(e){}
     }
 
@@ -437,21 +480,31 @@ async function loadPacById(id,name,note,country){
   S.activeTab="recipients"; S.expanded=new Set();
   setLoad(true); setErr(null); clearRes();
   try{
-    // Load direct disbursements, independent expenditures, and individual donors simultaneously
-    const [disbData,ieData,indivData,sumData]=await Promise.all([
-      api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
-      api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+    // schedule_b filtered to candidate contributions (purpose codes H=House, S=Senate, P=President)
+    // schedule_e = independent expenditures by candidate
+    // schedule_a = individual donors to this PAC
+    const [contribData,ieData,indivData,sumData]=await Promise.all([
+      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=H&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+      api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${id}&cycle=${S.cycle}&per_page=100&sort=-total&api_key=${getKey()}`).catch(()=>({results:[]})),
       api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`),
       api(`${FEC}/committee/${id}/totals/?cycle=${S.cycle}&api_key=${getKey()}`).catch(()=>({results:[]})),
     ]);
 
-    // Merge direct + IE into unified recipients list
+    // Also fetch Senate + Presidential contributions
+    const [contribS,contribP]=await Promise.all([
+      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=S&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=P&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+    ]);
+
+    const allContribs=[...(contribData.results||[]),...(contribS.results||[]),...(contribP.results||[])];
+
+    // Merge direct contributions + IE into unified recipients list
     const recMap={};
-    (disbData.results||[]).forEach(r=>{
+    allContribs.forEach(r=>{
       const k=r.recipient_name||"UNKNOWN";
-      if(!recMap[k]) recMap[k]={name:k,id:r.recipient_id,direct:0,ie_support:0,ie_oppose:0,count:0};
-      recMap[k].direct+=Number(r.total)||0;
-      recMap[k].count+=Number(r.count)||0;
+      if(!recMap[k]) recMap[k]={name:k,id:r.recipient_committee_id,direct:0,ie_support:0,ie_oppose:0,count:0};
+      recMap[k].direct+=Number(r.disbursement_amount)||0;
+      recMap[k].count+=1;
     });
     (ieData.results||[]).forEach(r=>{
       const k=r.candidate_name||"UNKNOWN";
