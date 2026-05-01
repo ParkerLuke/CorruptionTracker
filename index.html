@@ -43,7 +43,7 @@ select option{background:#1c1c1c;color:#e0e0e0;}
 label{font-size:10px;color:#888;letter-spacing:1px;display:block;margin-bottom:4px;}
 
 table{width:100%;border-collapse:collapse;}
-thead th{padding:8px 14px;font-size:10px;color:#888;letter-spacing:1px;text-align:left;border-bottom:1px solid #252525;font-weight:400;white-space:nowrap;background:#141414;}
+thead th{padding:8px 14px;font-size:10px;color:#888;letter-spacing:1px;text-align:left;border-bottom:1px solid #252525;font-weight:400;white-space:nowrap;background:#141414;position:sticky;top:0;z-index:10;}
 th.r,td.r{text-align:right;}
 tbody tr{border-bottom:1px solid #202020;}
 tbody tr.click{cursor:pointer;}
@@ -92,6 +92,7 @@ td.name{color:#e8e8e8;}
 .committee-item:hover{background:#202020;}
 
 .footer{margin-top:28px;padding-top:14px;border-top:1px solid #1e1e1e;font-size:10px;color:#444;letter-spacing:1px;line-height:2;}
+.refund-tag{display:inline-block;background:#2a1a1a;border:1px solid #5c2a2a;color:#e07070;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;letter-spacing:1px;}
 .expand-icon{color:#666;font-size:10px;margin-right:6px;display:inline-block;width:10px;}
 
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
@@ -729,11 +730,12 @@ function indivTable(rows){
   if(!rows.length) html+=`<tr><td colspan="4" class="empty">No individual contributions ≥ $1,000 found. Try a real API key if using DEMO_KEY.</td></tr>`;
   rows.forEach((row,i)=>{
     const key="d_"+i,exp=S.expanded.has(key),multi=row.txns?.length>1;
+    const isRefund=row.total<0;
     html+=`<tr class="${multi?"click":""}" onclick="${multi?`toggleExp('${key}')`:""}">
-      <td><span class="expand-icon">${multi?(exp?"▼":"▶"):" "}</span><span class="name">${row.name}</span>
+      <td><span class="expand-icon">${multi?(exp?"▼":"▶"):" "}</span><span class="name">${row.name}</span>${isRefund?`<span class="refund-tag">REFUND</span>`:""}
         <div style="font-size:10px;color:#666;margin-left:16px;">${row.state||""}</div></td>
       <td class="sm">${row.employer||"—"}<br/><span style="color:#666;">${row.occupation||""}</span></td>
-      <td class="amt">${fmt(row.total)}</td>
+      <td class="${isRefund?"r":"amt"}" style="${isRefund?"text-align:right;color:#e07070;font-weight:700;":""}">${fmt(row.total)}</td>
       <td class="dim">${row.txns?.length||1}</td>
     </tr>`;
     if(exp&&row.txns) row.txns.forEach(t=>{
