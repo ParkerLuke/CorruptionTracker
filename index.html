@@ -1,95 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>FEC · Foreign Influence Explorer</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e8e8e8; min-height: 100vh; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Courier New',monospace;background:#0d0d0d;color:#d8d8d8;min-height:100vh;}
 
-#header { background: #111; border-bottom: 2px solid #f0e040; padding: 16px 28px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.logo { font-size: 24px; font-weight: 700; color: #f0e040; letter-spacing: 3px; }
-.subtitle { font-size: 11px; color: #888; letter-spacing: 2px; flex: 1; }
-.source-tag { font-size: 10px; color: #444; letter-spacing: 1px; }
+#header{background:#111;border-bottom:2px solid #f0e040;padding:16px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.logo{font-size:22px;font-weight:700;color:#f0e040;letter-spacing:3px;}
+.subtitle{font-size:11px;color:#aaa;letter-spacing:2px;flex:1;}
+.src{font-size:10px;color:#666;}
 
-#app { padding: 20px 28px; max-width: 1000px; }
+#app{padding:18px 24px;max-width:1020px;}
 
-input[type=text], select {
-  background: #161616; border: 1px solid #2a2a2a; color: #e8e8e8;
-  padding: 8px 12px; font-size: 13px; border-radius: 4px; outline: none;
-  font-family: 'Courier New', monospace;
-}
-input[type=text]:focus, select:focus { border-color: #555; }
-select { cursor: pointer; }
-select option { background: #1a1a1a; }
+input[type=text],select{background:#1c1c1c;border:1px solid #383838;color:#e0e0e0;padding:8px 12px;font-size:13px;border-radius:4px;outline:none;font-family:'Courier New',monospace;}
+input[type=text]:focus,select:focus{border-color:#666;}
+select{cursor:pointer;}
+select option{background:#1c1c1c;color:#e0e0e0;}
 
-.btn { background: #f0e040; color: #000; border: none; border-radius: 4px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; white-space: nowrap; }
-.btn:hover { background: #ffe000; }
-.btn:disabled { background: #2a2a2a; color: #555; cursor: default; }
-.btn-sm { padding: 5px 12px; font-size: 11px; }
-.btn-ghost { background: #1a1a1a; color: #888; border: 1px solid #2a2a2a; border-radius: 3px; padding: 5px 12px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; }
-.btn-ghost:hover { border-color: #555; color: #ccc; }
-.btn-ghost.active { background: #f0e040; color: #000; border-color: #f0e040; font-weight: 700; }
+.btn{background:#f0e040;color:#000;border:none;border-radius:4px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;white-space:nowrap;}
+.btn:hover{background:#ffe000;}
+.btn:disabled{background:#2a2a2a;color:#666;cursor:default;}
+.btn-ghost{background:#1c1c1c;color:#aaa;border:1px solid #383838;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;}
+.btn-ghost:hover{border-color:#666;color:#ddd;}
+.btn-ghost.active{background:#f0e040;color:#000;border-color:#f0e040;font-weight:700;}
+.btn-sm{padding:4px 10px;font-size:11px;}
 
-.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.mb8{margin-bottom:8px;} .mb12{margin-bottom:12px;} .mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}.mb20{margin-bottom:20px;}
 
-.mode-bar { display: flex; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
-.mode-btn { flex: 1; background: #111; color: #555; border: none; border-right: 1px solid #2a2a2a; padding: 10px 8px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; letter-spacing: 1px; }
-.mode-btn:last-child { border-right: none; }
-.mode-btn.active { background: #1c1c1c; color: #f0e040; font-weight: 700; }
+.mode-bar{display:flex;border:1px solid #383838;border-radius:4px;overflow:hidden;margin-bottom:20px;}
+.mode-btn{flex:1;background:#111;color:#777;border:none;border-right:1px solid #383838;padding:10px 8px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;}
+.mode-btn:last-child{border-right:none;}
+.mode-btn.active{background:#1c1c1c;color:#f0e040;font-weight:700;}
+.mode-btn:hover:not(.active){color:#bbb;}
 
-.card { background: #161616; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; }
-.card-hdr { padding: 8px 14px; font-size: 10px; color: #555; letter-spacing: 1px; border-bottom: 1px solid #1e1e1e; }
+.card{background:#181818;border:1px solid #333;border-radius:4px;overflow:hidden;}
+.card-hdr{padding:8px 14px;font-size:10px;color:#888;letter-spacing:1px;border-bottom:1px solid #252525;}
 
-label { font-size: 10px; color: #555; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+label{font-size:10px;color:#888;letter-spacing:1px;display:block;margin-bottom:4px;}
 
-table { width: 100%; border-collapse: collapse; }
-thead th { padding: 8px 14px; font-size: 10px; color: #555; letter-spacing: 1px; text-align: left; border-bottom: 1px solid #1e1e1e; font-weight: 400; white-space: nowrap; }
-th.r, td.r { text-align: right; }
-tbody tr { border-bottom: 1px solid #181818; }
-tbody tr.click { cursor: pointer; }
-tbody tr.click:hover { background: #1c1c1c; }
-tbody td { padding: 9px 14px; font-size: 12px; vertical-align: middle; }
-td.amt { text-align: right; font-size: 13px; color: #7dd87d; font-weight: 700; }
-td.dim { color: #555; font-size: 11px; text-align: right; }
-td.sm { font-size: 11px; color: #888; }
+table{width:100%;border-collapse:collapse;}
+thead th{padding:8px 14px;font-size:10px;color:#888;letter-spacing:1px;text-align:left;border-bottom:1px solid #252525;font-weight:400;white-space:nowrap;background:#141414;}
+th.r,td.r{text-align:right;}
+tbody tr{border-bottom:1px solid #202020;}
+tbody tr.click{cursor:pointer;}
+tbody tr.click:hover{background:#202020;}
+tbody td{padding:9px 14px;font-size:12px;vertical-align:middle;color:#ccc;}
+td.amt{text-align:right;font-size:13px;color:#7dd87d;font-weight:700;}
+td.dim{color:#666;font-size:11px;text-align:right;}
+td.sm{font-size:11px;color:#aaa;}
+td.name{color:#e8e8e8;}
 
-.sub-row td { background: #111; padding: 6px 14px 6px 34px; font-size: 11px; color: #888; border-bottom: 1px solid #151515; }
-.sub-row td.amt { color: #5cb85c; font-size: 12px; }
+.sub-row td{background:#121212;padding:6px 14px 6px 34px;font-size:11px;color:#999;border-bottom:1px solid #181818;}
+.sub-row td.amt{color:#5cb85c;font-size:12px;}
 
-.chip-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.chip { background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa; border-radius: 3px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace; }
-.chip:hover { border-color: #f0e040; color: #f0e040; }
+.chip-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{background:#1c1c1c;border:1px solid #383838;color:#ccc;border-radius:3px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;}
+.chip:hover{border-color:#f0e040;color:#f0e040;}
 
-.res-title { font-size: 16px; color: #f0e040; font-weight: 700; margin-bottom: 3px; }
-.res-meta { font-size: 10px; color: #555; letter-spacing: 1px; margin-bottom: 14px; }
+.res-title{font-size:17px;color:#f0e040;font-weight:700;margin-bottom:3px;}
+.res-meta{font-size:10px;color:#777;letter-spacing:1px;margin-bottom:14px;}
 
-.loading { color: #f0e040; font-size: 12px; letter-spacing: 2px; padding: 20px 0; }
-.error-box { background: #1a0808; border: 1px solid #5c1a1a; border-radius: 4px; padding: 10px 14px; font-size: 12px; color: #e07070; margin-bottom: 14px; }
-.empty { padding: 16px 14px; font-size: 12px; color: #555; }
+.loading{color:#f0e040;font-size:12px;letter-spacing:2px;padding:20px 0;}
+.error-box{background:#1a0808;border:1px solid #5c1a1a;border-radius:4px;padding:10px 14px;font-size:12px;color:#e07070;margin-bottom:14px;}
+.empty{padding:16px 14px;font-size:12px;color:#777;}
+.info-box{background:#0e1a0e;border:1px solid #1a3a1a;border-radius:4px;padding:10px 14px;font-size:11px;color:#8abf8a;margin-bottom:14px;line-height:1.6;}
 
-.badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 1px; margin-left: 6px; vertical-align: middle; display: inline-block; }
-.dem { background: #1a4a8a; color: #fff; }
-.rep { background: #8a1a1a; color: #fff; }
-.oth { background: #444; color: #fff; }
+.badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:1px;margin-left:6px;vertical-align:middle;display:inline-block;}
+.dem{background:#1a4a8a;color:#fff;}
+.rep{background:#8a1a1a;color:#fff;}
+.oth{background:#444;color:#fff;}
 
-.cpill { display: inline-block; background: #1a2a1a; border: 1px solid #2a4a2a; color: #6dc86d; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; }
-.fmatch { display: inline-block; background: #2a1e00; border: 1px solid #554400; color: #f0c040; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; margin-left: 4px; }
-.nmatch { display: inline-block; background: #1a1a1a; border: 1px solid #2a2a2a; color: #444; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; margin-left: 4px; }
+.cpill{display:inline-block;background:#1a2a1a;border:1px solid #2a4a2a;color:#7abf7a;font-size:10px;padding:2px 8px;border-radius:10px;letter-spacing:1px;}
+.fmatch{display:inline-block;background:#2a1e00;border:1px solid #554400;color:#f0c040;font-size:10px;padding:2px 8px;border-radius:10px;letter-spacing:1px;margin-left:4px;}
+.nmatch{display:inline-block;background:#1a1a1a;border:1px solid #333;color:#555;font-size:10px;padding:2px 8px;border-radius:10px;letter-spacing:1px;margin-left:4px;}
+.superpac-tag{display:inline-block;background:#1a1a2a;border:1px solid #2a2a5a;color:#8080dd;font-size:10px;padding:2px 6px;border-radius:3px;margin-left:6px;letter-spacing:1px;}
+.ie-tag{display:inline-block;background:#2a1a2a;border:1px solid #4a2a4a;color:#cc80cc;font-size:10px;padding:2px 6px;border-radius:3px;margin-left:4px;}
+.support-tag{color:#7dd87d;font-size:10px;}
+.oppose-tag{color:#e07070;font-size:10px;}
 
-.sum-row { display: flex; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid #1e1e1e; font-size: 12px; }
-.sum-row:last-child { border-bottom: none; }
+.sum-row{display:flex;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #202020;font-size:12px;}
+.sum-row:last-child{border-bottom:none;}
 
-.tab-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-.sort-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.tab-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.sort-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
 
-.committee-item { padding: 10px 14px; border-bottom: 1px solid #181818; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.committee-item:hover { background: #1e1e1e; }
+.committee-item{padding:10px 14px;border-bottom:1px solid #1e1e1e;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.committee-item:hover{background:#202020;}
 
-.footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #1a1a1a; font-size: 10px; color: #2a2a2a; letter-spacing: 1px; line-height: 2; }
-.expand-icon { color: #555; font-size: 10px; margin-right: 6px; display: inline-block; width: 10px; }
+.footer{margin-top:28px;padding-top:14px;border-top:1px solid #1e1e1e;font-size:10px;color:#444;letter-spacing:1px;line-height:2;}
+.expand-icon{color:#666;font-size:10px;margin-right:6px;display:inline-block;width:10px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
+.stat-box{background:#181818;border:1px solid #333;border-radius:4px;padding:12px 14px;}
+.stat-label{font-size:10px;color:#888;letter-spacing:1px;margin-bottom:4px;}
+.stat-val{font-size:18px;color:#f0e040;font-weight:700;}
+.stat-sub{font-size:10px;color:#666;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -97,20 +106,20 @@ td.sm { font-size: 11px; color: #888; }
 <div id="header">
   <span class="logo">FEC</span>
   <span class="subtitle">FOREIGN INFLUENCE &amp; CAMPAIGN FINANCE EXPLORER</span>
-  <span class="source-tag">fec.gov · fara.gov · doj.gov</span>
+  <span class="src">fec.gov · fara.gov · doj.gov</span>
 </div>
 
 <div id="app">
 
   <!-- API Key -->
   <div class="card mb16" style="padding:10px 14px;">
-    <label>FEC API KEY — DEMO_KEY works at 40 req/hr · Free upgrade: api.data.gov/signup → 1,000 req/hr</label>
-    <input type="text" id="apiKeyInput" value="DEMO_KEY" style="width:100%;border:none;background:transparent;padding:4px 0;" />
+    <label>FEC API KEY — DEMO_KEY = 40 req/hr &nbsp;·&nbsp; Free upgrade at api.data.gov/signup = 1,000 req/hr</label>
+    <input type="text" id="apiKey" value="DEMO_KEY" style="width:100%;border:none;background:transparent;color:#bbb;padding:4px 0;font-size:12px;"/>
   </div>
 
   <!-- Cycle -->
   <div class="row mb20">
-    <span style="font-size:11px;color:#555;letter-spacing:1px;">ELECTION CYCLE</span>
+    <span style="font-size:11px;color:#777;letter-spacing:1px;">ELECTION CYCLE</span>
     <div id="cycleBar" class="row" style="gap:6px;"></div>
   </div>
 
@@ -134,18 +143,15 @@ td.sm { font-size: 11px; color: #888; }
         <button class="btn" onclick="loadForeignInfluence()" id="foreignBtn" disabled>ANALYZE</button>
       </div>
     </div>
-    <div class="mb12">
-      <label>QUICK SELECT</label>
-      <div class="chip-bar" id="countryChips"></div>
-    </div>
-    <div id="faraStatus" style="font-size:10px;color:#555;letter-spacing:1px;margin-bottom:14px;"></div>
+    <div class="mb12"><label>QUICK SELECT</label><div class="chip-bar" id="countryChips"></div></div>
+    <div id="faraStatus" style="font-size:10px;color:#777;letter-spacing:1px;margin-bottom:14px;"></div>
   </div>
 
   <!-- PAC UI -->
   <div id="pacUI" style="display:none;">
-    <div class="mb8"><label>KNOWN FOREIGN-LINKED PACs</label><div class="chip-bar" id="pacChips"></div></div>
+    <div class="mb8"><label>KNOWN FOREIGN-LINKED PACs — CLICK TO LOAD IMMEDIATELY</label><div class="chip-bar" id="pacChips"></div></div>
     <div class="row mb16">
-      <input type="text" id="pacSearch" placeholder="Search PAC name..." style="flex:1;" onkeydown="if(event.key==='Enter')searchPACs()" />
+      <input type="text" id="pacSearch" placeholder="Search PAC name..." style="flex:1;" onkeydown="if(event.key==='Enter')searchPACs()"/>
       <button class="btn" onclick="searchPACs()">SEARCH</button>
     </div>
     <div id="pacCommitteeList"></div>
@@ -154,7 +160,7 @@ td.sm { font-size: 11px; color: #888; }
   <!-- Candidate UI -->
   <div id="candidateUI" style="display:none;">
     <div class="row mb16">
-      <input type="text" id="candidateSearch" placeholder="Candidate name (e.g. Chuck Schumer, Marco Rubio...)" style="flex:1;" onkeydown="if(event.key==='Enter')searchCandidate()" />
+      <input type="text" id="candidateSearch" placeholder="Candidate name (e.g. Chuck Schumer, Marco Rubio...)" style="flex:1;" onkeydown="if(event.key==='Enter')searchCandidate()"/>
       <button class="btn" onclick="searchCandidate()">SEARCH</button>
     </div>
   </div>
@@ -164,25 +170,35 @@ td.sm { font-size: 11px; color: #888; }
   <div id="results"></div>
 
   <div class="footer">
-    SOURCES: api.open.fec.gov (campaign finance) &nbsp;·&nbsp; efile.fara.gov (foreign agent registrations, DOJ) &nbsp;·&nbsp;
-    INDIVIDUAL CONTRIBUTIONS THRESHOLD: $1,000+ &nbsp;·&nbsp; AMOUNTS ARE CYCLE AGGREGATES<br/>
-    NOTE: Foreign nationals cannot legally donate to US federal campaigns. FEC employer matches surface agents registered under FARA who work at US firms.
+    SOURCES: api.open.fec.gov (FEC campaign finance) &nbsp;·&nbsp; efile.fara.gov (DOJ foreign agent registrations)<br/>
+    INDIVIDUAL CONTRIBUTIONS THRESHOLD: $1,000+ &nbsp;·&nbsp; AMOUNTS ARE CYCLE AGGREGATES &nbsp;·&nbsp; INCLUDES DIRECT CONTRIBUTIONS + INDEPENDENT EXPENDITURES<br/>
+    NOTE: Foreign nationals cannot legally donate to US federal campaigns. Data surfaces foreign-linked agents/PACs operating legally under US law.
   </div>
 </div>
 
 <script>
 const FEC  = "https://api.open.fec.gov/v1";
 const FARA = "https://efile.fara.gov/api/v1";
-
 const CYCLES = [2024,2022,2020,2018,2016];
-const QUICK_COUNTRIES = ["ISRAEL","SAUDI ARABIA","CHINA","UNITED ARAB EMIRATES","TURKEY","RUSSIA","INDIA","UKRAINE","QATAR","SOUTH KOREA","JAPAN","TAIWAN","ARMENIA","GREECE","CUBA","PAKISTAN","AZERBAIJAN"];
+
+// Updated and expanded PAC list with correct IDs
 const KNOWN_PACS = [
-  {label:"AIPAC PAC",      id:"C00797159", country:"ISRAEL"},
-  {label:"USINPAC",        id:"C00397463", country:"INDIA"},
-  {label:"Armenian ANCA",  id:"C00101691", country:"ARMENIA"},
-  {label:"Turkish ATAA",   id:"C00395053", country:"TURKEY"},
-  {label:"Cuba CANF PAC",  id:"C00245282", country:"CUBA"},
+  // Israel
+  {label:"AIPAC PAC",            id:"C00797670", country:"ISRAEL",       note:"Direct contributions PAC"},
+  {label:"United Democracy Proj",id:"C00799031", country:"ISRAEL",       note:"AIPAC Super PAC — indep. expenditures"},
+  // India
+  {label:"USINPAC",              id:"C00397463", country:"INDIA",        note:"US-India PAC"},
+  // Armenia
+  {label:"ANCA PAC",             id:"C00101691", country:"ARMENIA",      note:"Armenian National Committee"},
+  // Turkey
+  {label:"Turkish Coalition PAC",id:"C00395053", country:"TURKEY",       note:"Turkish-American PAC"},
+  // Cuba
+  {label:"CANF PAC",             id:"C00245282", country:"CUBA",         note:"Cuban-American National Foundation"},
+  // Greece
+  {label:"Hellenic PAC",         id:"C00386524", country:"GREECE",       note:"American Hellenic PAC"},
 ];
+
+const QUICK_COUNTRIES = ["ISRAEL","SAUDI ARABIA","CHINA","UNITED ARAB EMIRATES","TURKEY","RUSSIA","INDIA","UKRAINE","QATAR","SOUTH KOREA","JAPAN","TAIWAN","ARMENIA","GREECE","CUBA","PAKISTAN","AZERBAIJAN"];
 
 const S = {
   mode:"foreign", cycle:2024, sortDir:"desc",
@@ -190,25 +206,25 @@ const S = {
   faraByCountry:{}, faraLoaded:false, faraLoading:false,
 };
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
-function init() {
-  // Cycle bar
-  const bar = document.getElementById("cycleBar");
-  CYCLES.forEach(c => {
-    const b = document.createElement("button");
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init(){
+  const bar=document.getElementById("cycleBar");
+  CYCLES.forEach(c=>{
+    const b=document.createElement("button");
     b.className="btn-ghost"+(c===S.cycle?" active":"");
     b.textContent=c; b.dataset.c=c;
     b.onclick=()=>{S.cycle=c;renderCycleBar();};
     bar.appendChild(b);
   });
-  // PAC chips
+
   KNOWN_PACS.forEach(p=>{
     const ch=document.createElement("span");
-    ch.className="chip"; ch.textContent=p.label;
-    ch.onclick=()=>loadPacById(p.id,p.label);
+    ch.className="chip";
+    ch.innerHTML=`${p.label} <span style="color:#666;font-size:10px;">(${p.country})</span>`;
+    ch.onclick=()=>loadPacById(p.id,p.label,p.note,p.country);
     document.getElementById("pacChips").appendChild(ch);
   });
-  // Country quick chips
+
   QUICK_COUNTRIES.forEach(c=>{
     const ch=document.createElement("span");
     ch.className="chip"; ch.textContent=c;
@@ -219,6 +235,7 @@ function init() {
     };
     document.getElementById("countryChips").appendChild(ch);
   });
+
   loadFARAData();
 }
 
@@ -228,13 +245,13 @@ function renderCycleBar(){
 }
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
-const getKey=()=>document.getElementById("apiKeyInput").value.trim()||"DEMO_KEY";
+const getKey=()=>document.getElementById("apiKey").value.trim()||"DEMO_KEY";
 const fmt=n=>(n==null||n==="")?"—":"$"+Number(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
 const fmtDate=d=>{try{return new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch{return d||"—";}};
 const partyBadge=p=>p?`<span class="badge ${p==="DEM"?"dem":p==="REP"?"rep":"oth"}">${p}</span>`:"";
 const setLoad=on=>document.getElementById("loading").style.display=on?"block":"none";
 const setErr=msg=>{const e=document.getElementById("errorBox");e.style.display=msg?"block":"none";if(msg)e.textContent=msg;};
-const clearRes=()=>{document.getElementById("results").innerHTML="";};
+const clearRes=()=>document.getElementById("results").innerHTML="";
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 async function api(url){
@@ -251,11 +268,10 @@ function sorted(rows,key){
 }
 
 function toggleSort(){S.sortDir=S.sortDir==="desc"?"asc":"desc";if(S.currentResults)rerender();}
-
 const sortBtn=()=>`<button class="btn-ghost active btn-sm" onclick="toggleSort()">${S.sortDir==="desc"?"▼ HIGH → LOW":"▲ LOW → HIGH"}</button>`;
 const tabBar=(tabs,active,fn)=>`<div class="tab-bar">
   ${tabs.map(([t,l])=>`<button class="btn-ghost${active===t?" active":""}" onclick="${fn}('${t}')">${l}</button>`).join("")}
-  <div class="sort-right"><span style="font-size:10px;color:#555;letter-spacing:1px;">SORT</span>${sortBtn()}</div>
+  <div class="sort-right"><span style="font-size:10px;color:#777;letter-spacing:1px;">SORT</span>${sortBtn()}</div>
 </div>`;
 
 // ── Mode ──────────────────────────────────────────────────────────────────────
@@ -274,25 +290,20 @@ async function loadFARAData(){
   const status=document.getElementById("faraStatus");
   status.textContent="LOADING FARA DATABASE FROM DOJ...";
   try{
-    // Load all active registrants
     const regData=await api(`${FARA}/Registrants/json/Active`);
     const registrants=(regData?.REGISTRANTS_ACTIVE?.ROW)||[];
-
-    // For each registrant, load their foreign principals to get country
-    // FARA rate limit: 5 req/10s — load in controlled batches
     const byCountry={};
     const total=registrants.length;
     let done=0;
 
-    // Process in batches of 4 with delay
     for(let i=0;i<registrants.length;i+=4){
       const batch=registrants.slice(i,i+4);
       await Promise.all(batch.map(async reg=>{
         try{
           const fpData=await api(`${FARA}/ForeignPrincipals/json/Active/${reg.Registration_Number}`);
           const fps=(fpData?.FOREIGN_PRINCIPALS_ACTIVE?.ROW)||[];
-          const fpsArr=Array.isArray(fps)?fps:[fps];
-          fpsArr.forEach(fp=>{
+          const arr=Array.isArray(fps)?fps:[fps];
+          arr.forEach(fp=>{
             if(!fp||!fp.Country)return;
             const country=fp.Country.toUpperCase().trim();
             if(!byCountry[country])byCountry[country]=[];
@@ -302,36 +313,34 @@ async function loadFARAData(){
               registrant_city:reg.City,
               registrant_state:reg.State,
               principal_name:fp.Foreign_Principal||fp.Name||"—",
-              principal_country:country,
+              country,
               registration_date:fp.Registration_Date||reg.Registration_Date,
             });
           });
-        }catch(e){/* skip */}
+        }catch(e){}
         done++;
       }));
       const pct=Math.round(done/total*100);
-      status.textContent=`LOADING FARA DATABASE... ${pct}% (${done}/${total} registrants)`;
-      await sleep(2100); // stay safely under 5 req/10s
+      status.textContent=`LOADING FARA... ${pct}% (${done}/${total} registrants scanned)`;
+      await sleep(2200);
     }
 
     S.faraByCountry=byCountry;
     S.faraLoaded=true;
 
-    // Populate dropdown
     const sel=document.getElementById("countrySelect");
     sel.innerHTML=`<option value="">— choose a country —</option>`;
     Object.keys(byCountry).sort().forEach(c=>{
       const opt=document.createElement("option");
-      opt.value=c; opt.textContent=`${c} (${byCountry[c].length} agents)`;
+      opt.value=c; opt.textContent=`${c}  (${byCountry[c].length} agents)`;
       sel.appendChild(opt);
     });
 
     const totalAgents=Object.values(byCountry).reduce((a,b)=>a+b.length,0);
-    status.textContent=`✓ FARA LOADED — ${registrants.length} US registrants · ${totalAgents} principal relationships · ${Object.keys(byCountry).length} countries`;
+    status.textContent=`✓ FARA LOADED — ${registrants.length} registrants · ${totalAgents} principal relationships · ${Object.keys(byCountry).length} countries`;
     document.getElementById("foreignBtn").disabled=false;
   }catch(e){
-    status.textContent=`⚠ FARA load error: ${e.message}. You can still select a quick country.`;
-    // Populate with quick countries as fallback
+    status.textContent=`⚠ FARA unavailable (CORS): ${e.message}. Country quick-select will show linked PACs only.`;
     const sel=document.getElementById("countrySelect");
     sel.innerHTML=`<option value="">— choose a country —</option>`;
     QUICK_COUNTRIES.forEach(c=>{
@@ -348,54 +357,54 @@ function onCountryChange(){
   document.getElementById("foreignBtn").disabled=!document.getElementById("countrySelect").value;
 }
 
-// ── Foreign Influence Analysis ────────────────────────────────────────────────
+// ── Foreign Influence ─────────────────────────────────────────────────────────
 async function loadForeignInfluence(){
   const country=document.getElementById("countrySelect").value.trim().toUpperCase();
   if(!country)return;
-  S.expanded=new Set(); S.activeTab="agents";
+  S.expanded=new Set(); S.activeTab="recipients";
   clearRes(); setErr(null); setLoad(true);
 
   try{
     const agents=(S.faraByCountry[country])||[];
-
-    // Cross-reference top agents against FEC by employer name
-    const agentNames=[...new Set(agents.map(a=>a.registrant_name).filter(Boolean))].slice(0,6);
-    const fecMatches={};
-    for(const name of agentNames){
-      try{
-        const short=name.split(/\s+/).slice(0,3).join(" ");
-        const d=await api(`${FEC}/schedules/schedule_a/?contributor_employer=${encodeURIComponent(short)}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=20&is_individual=true&api_key=${getKey()}`);
-        if(d.results?.length) fecMatches[name]=d.results;
-        await sleep(250);
-      }catch(e){}
-    }
-
-    // Linked PACs for this country
     const linkedPacs=KNOWN_PACS.filter(p=>p.country===country);
-    const pacData=[];
+
+    // Load PAC direct contributions + independent expenditures for linked PACs
+    const pacResults=[];
     for(const pac of linkedPacs){
       try{
-        const d=await api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=50&api_key=${getKey()}`);
-        if(d.results?.length) pacData.push({pac,rows:d.results});
+        const [disbData,ieData]=await Promise.all([
+          api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
+          api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
+        ]);
+        pacResults.push({pac, disbRows:disbData.results||[], ieRows:ieData.results||[]});
         await sleep(250);
       }catch(e){}
     }
 
-    // Indiv donors whose employer matches agent names
-    const indivMatches=[];
-    Object.values(fecMatches).flat().forEach(r=>{
-      indivMatches.push({
-        name:r.contributor_name||"—",
-        employer:r.contributor_employer||"—",
-        occupation:r.contributor_occupation||"—",
-        state:r.contributor_state||"—",
-        amount:Number(r.contribution_receipt_amount)||0,
-        date:r.contribution_receipt_date,
-        candidate:r.committee?.name||"",
+    // Flatten all recipients across PACs for the main view
+    const allRecipients={};
+    pacResults.forEach(({pac,disbRows,ieRows})=>{
+      disbRows.forEach(r=>{
+        const k=r.recipient_name||"UNKNOWN";
+        if(!allRecipients[k]) allRecipients[k]={name:k,id:r.recipient_id,direct:0,ie_support:0,ie_oppose:0,pacs:[],txns:0};
+        allRecipients[k].direct+=Number(r.total)||0;
+        allRecipients[k].txns+=Number(r.count)||0;
+        if(!allRecipients[k].pacs.includes(pac.label)) allRecipients[k].pacs.push(pac.label);
+      });
+      ieRows.forEach(r=>{
+        const k=r.candidate_name||"UNKNOWN";
+        if(!allRecipients[k]) allRecipients[k]={name:k,id:r.candidate_id,direct:0,ie_support:0,ie_oppose:0,pacs:[],txns:0};
+        const amt=Number(r.total)||0;
+        if((r.support_oppose_indicator||"").toUpperCase()==="S") allRecipients[k].ie_support+=amt;
+        else allRecipients[k].ie_oppose+=amt;
+        allRecipients[k].txns+=Number(r.count)||0;
+        if(!allRecipients[k].pacs.includes(pac.label)) allRecipients[k].pacs.push(pac.label);
       });
     });
 
-    S.currentResults={type:"foreign",country,agents,fecMatches,indivMatches,pacData};
+    const recipients=Object.values(allRecipients).map(r=>({...r, total:r.direct+r.ie_support+r.ie_oppose}));
+
+    S.currentResults={type:"foreign",country,agents,pacResults,recipients,linkedPacs};
     rerender();
   }catch(e){setErr("Error: "+e.message);}
   setLoad(false);
@@ -408,30 +417,58 @@ async function searchPACs(){
   setLoad(true); setErr(null); clearRes();
   document.getElementById("pacCommitteeList").innerHTML="";
   try{
-    const data=await api(`${FEC}/committees/?q=${encodeURIComponent(q)}&committee_type=O&committee_type=N&committee_type=Q&committee_type=V&committee_type=W&per_page=20&api_key=${getKey()}`);
+    const data=await api(`${FEC}/committees/?q=${encodeURIComponent(q)}&committee_type=O&committee_type=N&committee_type=Q&committee_type=V&committee_type=W&committee_type=U&per_page=20&api_key=${getKey()}`);
     if(!data.results?.length){setErr("No committees found.");}
     else{
-      document.getElementById("pacCommitteeList").innerHTML=`<div class="card mb16"><div class="card-hdr">SELECT COMMITTEE</div>`+
-        data.results.map(c=>`<div class="committee-item" onclick="loadPacById('${c.committee_id}','${(c.name||"").replace(/'/g,"\\'")}')">
-          <div><div style="color:#ddd;font-size:13px;">${c.name||"—"}</div>
-          <div style="font-size:10px;color:#555;margin-top:2px;">${c.committee_id} · ${c.state||""} · ${c.committee_type_full||""}</div></div>
-          <span style="font-size:10px;color:#f0e040;">SELECT →</span>
+      document.getElementById("pacCommitteeList").innerHTML=`<div class="card mb16">
+        <div class="card-hdr">SELECT COMMITTEE — CLICK TO LOAD DATA IMMEDIATELY</div>`+
+        data.results.map(c=>`<div class="committee-item" onclick="loadPacById('${c.committee_id}','${(c.name||"").replace(/'/g,"\\'")}','${c.committee_type_full||""}','')">
+          <div><div style="color:#e0e0e0;font-size:13px;">${c.name||"—"}</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">${c.committee_id} · ${c.state||""} · ${c.committee_type_full||""}</div></div>
+          <span style="font-size:10px;color:#f0e040;">LOAD →</span>
         </div>`).join("")+`</div>`;
     }
   }catch(e){setErr("API error: "+e.message);}
   setLoad(false);
 }
 
-async function loadPacById(id,name){
+async function loadPacById(id,name,note,country){
   document.getElementById("pacCommitteeList").innerHTML="";
-  S.activeTab="disbursements"; S.expanded=new Set();
+  S.activeTab="recipients"; S.expanded=new Set();
   setLoad(true); setErr(null); clearRes();
   try{
-    const [disbData,indivData]=await Promise.all([
+    // Load direct disbursements, independent expenditures, and individual donors simultaneously
+    const [disbData,ieData,indivData,sumData]=await Promise.all([
       api(`${FEC}/schedules/schedule_b/by_recipient_id/?committee_id=${id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`),
-      api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`)
+      api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${id}&cycle=${S.cycle}&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
+      api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`),
+      api(`${FEC}/committee/${id}/totals/?cycle=${S.cycle}&api_key=${getKey()}`).catch(()=>({results:[]})),
     ]);
-    S.currentResults={type:"pac",committee_id:id,name,disbRows:disbData.results||[],indivRows:aggIndiv(indivData.results||[])};
+
+    // Merge direct + IE into unified recipients list
+    const recMap={};
+    (disbData.results||[]).forEach(r=>{
+      const k=r.recipient_name||"UNKNOWN";
+      if(!recMap[k]) recMap[k]={name:k,id:r.recipient_id,direct:0,ie_support:0,ie_oppose:0,count:0};
+      recMap[k].direct+=Number(r.total)||0;
+      recMap[k].count+=Number(r.count)||0;
+    });
+    (ieData.results||[]).forEach(r=>{
+      const k=r.candidate_name||"UNKNOWN";
+      if(!recMap[k]) recMap[k]={name:k,id:r.candidate_id,direct:0,ie_support:0,ie_oppose:0,count:0};
+      const amt=Number(r.total)||0;
+      if((r.support_oppose_indicator||"").toUpperCase()==="S") recMap[k].ie_support+=amt;
+      else recMap[k].ie_oppose+=amt;
+      recMap[k].count+=Number(r.count)||0;
+    });
+    const recipients=Object.values(recMap).map(r=>({...r,total:r.direct+r.ie_support+r.ie_oppose}));
+
+    S.currentResults={
+      type:"pac", id, name, note, country,
+      recipients,
+      indivRows:aggIndiv(indivData.results||[]),
+      summary:sumData.results?.[0]||null,
+    };
     rerender();
   }catch(e){setErr("API error: "+e.message);}
   setLoad(false);
@@ -478,60 +515,56 @@ function rerender(){
 
 // ── Foreign ───────────────────────────────────────────────────────────────────
 function renderForeign(r){
-  const indivSorted=sorted(r.indivMatches,"amount");
-  const pacFlat=[];
-  r.pacData.forEach(({pac,rows})=>rows.forEach(row=>pacFlat.push({pac:pac.label,recipient:row.recipient_name||"—",amount:Number(row.total)||0,count:row.count})));
-  const pacSorted=sorted(pacFlat,"amount");
+  const recSorted=sorted(r.recipients,"total");
+  const totalDirect=r.recipients.reduce((a,b)=>a+b.direct,0);
+  const totalIE=r.recipients.reduce((a,b)=>a+b.ie_support+b.ie_oppose,0);
+  const totalAll=totalDirect+totalIE;
 
-  const tabs=[["agents","FARA AGENTS"],["indiv","INDIVIDUAL DONORS $1k+"],["pacs","LINKED PAC DISBURSEMENTS"]];
+  const tabs=[["recipients","POLITICIANS RECEIVING MONEY"],["agents","FARA REGISTERED AGENTS"]];
   let html=`
     <div class="res-title">🌐 ${r.country}</div>
-    <div class="res-meta">FOREIGN INFLUENCE ANALYSIS · CYCLE ${S.cycle} · ${r.agents.length} FARA REGISTERED AGENTS · ${r.indivMatches.length} INDIVIDUAL DONOR MATCHES · ${pacFlat.length} PAC DISBURSEMENTS</div>
-    ${tabBar(tabs,S.activeTab,"setForeignTab")}`;
+    <div class="res-meta">FOREIGN INFLUENCE · CYCLE ${S.cycle} · ${r.agents.length} FARA AGENTS · ${r.recipients.length} POLITICIANS REACHED · ${r.linkedPacs.length} LINKED PACs</div>`;
+
+  if(totalAll>0){
+    html+=`<div class="stat-grid">
+      <div class="stat-box"><div class="stat-label">TOTAL FLOW</div><div class="stat-val">${fmt(totalAll)}</div><div class="stat-sub">direct + independent expenditures</div></div>
+      <div class="stat-box"><div class="stat-label">DIRECT CONTRIBUTIONS</div><div class="stat-val">${fmt(totalDirect)}</div><div class="stat-sub">to candidate committees</div></div>
+      <div class="stat-box"><div class="stat-label">INDEPENDENT EXPENDITURES</div><div class="stat-val">${fmt(totalIE)}</div><div class="stat-sub">ads, mailers, etc.</div></div>
+      <div class="stat-box"><div class="stat-label">POLITICIANS REACHED</div><div class="stat-val">${r.recipients.length}</div><div class="stat-sub">cycle ${S.cycle}</div></div>
+    </div>`;
+  }
+
+  html+=tabBar(tabs,S.activeTab,"setForeignTab");
+
+  if(S.activeTab==="recipients"){
+    if(!r.linkedPacs.length){
+      html+=`<div class="info-box">No linked PACs found for ${r.country} in this tool's database. Try the PAC / Committee tab to search by name, or select a different country.</div>`;
+    }
+    html+=`<div style="font-size:10px;color:#666;margin-bottom:8px;letter-spacing:1px;">PACs: ${r.linkedPacs.map(p=>p.label).join(" · ")}</div>`;
+    html+=`<div class="card"><table>
+      <thead><tr><th>POLITICIAN / RECIPIENT</th><th class="r">DIRECT $</th><th class="r">IE SUPPORT $</th><th class="r">IE OPPOSE $</th><th class="r">TOTAL</th></tr></thead><tbody>`;
+    if(!recSorted.length) html+=`<tr><td colspan="5" class="empty">No recipient data found for ${r.country} in cycle ${S.cycle}. PACs may not have filed yet or used a different cycle.</td></tr>`;
+    recSorted.forEach(row=>{
+      html+=`<tr>
+        <td class="name">${row.name}</td>
+        <td class="r" style="color:#9dd89d;">${row.direct>0?fmt(row.direct):"—"}</td>
+        <td class="r" style="color:#7dd87d;">${row.ie_support>0?fmt(row.ie_support):"—"}</td>
+        <td class="r" style="color:#e07070;">${row.ie_oppose>0?fmt(row.ie_oppose):"—"}</td>
+        <td class="amt">${fmt(row.total)}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
 
   if(S.activeTab==="agents"){
     html+=`<div class="card"><table>
-      <thead><tr><th>US REGISTRANT (AGENT)</th><th>FOREIGN PRINCIPAL</th><th>COUNTRY</th><th>FEC MATCH</th></tr></thead><tbody>`;
-    if(!r.agents.length) html+=`<tr><td colspan="4" class="empty">No FARA registrants found for ${r.country}. The FARA database may still be loading, or there are no active registrants for this country.</td></tr>`;
+      <thead><tr><th>US REGISTRANT (AGENT)</th><th>FOREIGN PRINCIPAL</th><th>COUNTRY</th></tr></thead><tbody>`;
+    if(!r.agents.length) html+=`<tr><td colspan="3" class="empty">No FARA registrants loaded for ${r.country}. FARA database may still be loading — check the status bar above.</td></tr>`;
     r.agents.forEach(a=>{
-      const hasFec=!!r.fecMatches[a.registrant_name];
       html+=`<tr>
-        <td><div style="color:#ddd;">${a.registrant_name}</div><div style="font-size:10px;color:#555;margin-top:2px;">${a.registrant_city||""} ${a.registrant_state||""}</div></td>
+        <td><div class="name">${a.registrant_name}</div><div style="font-size:10px;color:#666;margin-top:2px;">${a.registrant_city||""} ${a.registrant_state||""}</div></td>
         <td class="sm">${a.principal_name}</td>
         <td><span class="cpill">${r.country}</span></td>
-        <td>${hasFec?`<span class="fmatch">✓ FEC MATCH</span>`:`<span class="nmatch">NO MATCH</span>`}</td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div>`;
-  }
-
-  if(S.activeTab==="indiv"){
-    html+=`<div class="card"><table>
-      <thead><tr><th>DONOR NAME</th><th>EMPLOYER (FARA-LINKED FIRM)</th><th>OCCUPATION</th><th>STATE</th><th class="r">AMOUNT</th><th>DATE</th></tr></thead><tbody>`;
-    if(!indivSorted.length) html+=`<tr><td colspan="6" class="empty">No individual donor matches found. FARA employer cross-reference requires a real API key for best results.</td></tr>`;
-    indivSorted.forEach(row=>{
-      html+=`<tr>
-        <td style="color:#ddd;">${row.name}</td>
-        <td class="sm">${row.employer}</td>
-        <td class="sm">${row.occupation}</td>
-        <td class="sm">${row.state}</td>
-        <td class="amt">${fmt(row.amount)}</td>
-        <td class="sm">${fmtDate(row.date)}</td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div>`;
-  }
-
-  if(S.activeTab==="pacs"){
-    html+=`<div class="card"><table>
-      <thead><tr><th>PAC (COUNTRY-LINKED)</th><th>RECIPIENT</th><th class="r">AMOUNT</th><th class="r">TXNS</th></tr></thead><tbody>`;
-    if(!pacSorted.length) html+=`<tr><td colspan="4" class="empty">No linked PAC data for ${r.country} in ${S.cycle}.</td></tr>`;
-    pacSorted.forEach(row=>{
-      html+=`<tr>
-        <td class="sm">${row.pac}</td>
-        <td style="color:#ddd;">${row.recipient}</td>
-        <td class="amt">${fmt(row.amount)}</td>
-        <td class="dim">${row.count||"—"}</td>
       </tr>`;
     });
     html+=`</tbody></table></div>`;
@@ -542,84 +575,111 @@ function renderForeign(r){
 
 function setForeignTab(t){S.activeTab=t;rerender();}
 
-// ── PAC ───────────────────────────────────────────────────────────────────────
+// ── PAC Render ────────────────────────────────────────────────────────────────
 function renderPac(r){
-  const disbRows=sorted(r.disbRows,"total");
-  const indivRows=sorted(r.indivRows,"total");
-  const tabs=[["disbursements","CANDIDATE DISBURSEMENTS"],["individuals","INDIVIDUAL DONORS $1k+"],["summary","COMMITTEE TOTALS"]];
-  let html=`
-    <div class="res-title">${r.name}</div>
-    <div class="res-meta">${r.committee_id} · CYCLE ${S.cycle}</div>
-    ${tabBar(tabs,S.activeTab,"setPacTab")}`;
+  const recSorted=sorted(r.recipients,"total");
+  const indivSorted=sorted(r.indivRows,"total");
+  const s=r.summary;
 
-  if(S.activeTab==="disbursements"){
+  const tabs=[["recipients","POLITICIANS RECEIVING MONEY"],["individuals","INDIVIDUAL DONORS $1k+"],["summary","COMMITTEE TOTALS"]];
+
+  // Stats
+  const totalDirect=r.recipients.reduce((a,b)=>a+b.direct,0);
+  const totalIE=r.recipients.reduce((a,b)=>a+b.ie_support+b.ie_oppose,0);
+
+  let html=`
+    <div class="res-title">${r.name}${r.country?` <span class="cpill" style="font-size:12px;margin-left:8px;">${r.country}</span>`:""}</div>
+    <div class="res-meta">${r.id} · CYCLE ${S.cycle}${r.note?` · ${r.note}`:""}</div>`;
+
+  if(s){
+    html+=`<div class="stat-grid">
+      <div class="stat-box"><div class="stat-label">TOTAL RAISED</div><div class="stat-val">${fmt(s.receipts)}</div></div>
+      <div class="stat-box"><div class="stat-label">TOTAL SPENT</div><div class="stat-val">${fmt(s.disbursements)}</div></div>
+      <div class="stat-box"><div class="stat-label">DIRECT TO CANDIDATES</div><div class="stat-val">${fmt(totalDirect||s.contributions_candidates)}</div></div>
+      <div class="stat-box"><div class="stat-label">INDEP. EXPENDITURES</div><div class="stat-val">${fmt(s.independent_expenditures||totalIE)}</div></div>
+    </div>`;
+  }
+
+  html+=tabBar(tabs,S.activeTab,"setPacTab");
+
+  if(S.activeTab==="recipients"){
     html+=`<div class="card"><table>
-      <thead><tr><th>RECIPIENT</th><th class="r">AMOUNT</th><th class="r">TXNS</th></tr></thead><tbody>`;
-    if(!disbRows.length) html+=`<tr><td colspan="3" class="empty">No itemized disbursements found for this cycle.</td></tr>`;
-    disbRows.forEach(row=>html+=`<tr>
-      <td><div style="color:#ddd;">${row.recipient_name||"—"}</div><div style="font-size:10px;color:#555;">${row.recipient_id||""}</div></td>
-      <td class="amt">${fmt(row.total)}</td><td class="dim">${row.count||"—"}</td></tr>`);
+      <thead><tr>
+        <th>POLITICIAN / RECIPIENT</th>
+        <th class="r">DIRECT $</th>
+        <th class="r">IE SUPPORT $</th>
+        <th class="r">IE OPPOSE $</th>
+        <th class="r">TOTAL</th>
+      </tr></thead><tbody>`;
+    if(!recSorted.length) html+=`<tr><td colspan="5" class="empty">No recipient data found for cycle ${S.cycle}. This PAC may primarily use independent expenditures — try a different cycle or check the Committee Totals tab.</td></tr>`;
+    recSorted.forEach(row=>{
+      html+=`<tr>
+        <td class="name">${row.name}</td>
+        <td class="r" style="color:#9dd89d;">${row.direct>0?fmt(row.direct):"—"}</td>
+        <td class="r" style="color:#7dd87d;">${row.ie_support>0?fmt(row.ie_support):"—"}</td>
+        <td class="r" style="color:#e07070;">${row.ie_oppose>0?fmt(row.ie_oppose):"—"}</td>
+        <td class="amt">${fmt(row.total)}</td>
+      </tr>`;
+    });
     html+=`</tbody></table></div>`;
   }
-  if(S.activeTab==="individuals") html+=indivTable(indivRows);
+  if(S.activeTab==="individuals") html+=indivTable(indivSorted);
   if(S.activeTab==="summary"){
-    html+=`<div id="sumArea"><div class="card"><div class="empty" style="color:#555;">Loading...</div></div></div>`;
-    loadSum(r.committee_id);
+    if(s){
+      html+=`<div class="card">`+
+        [["Total Raised",s.receipts],["Total Spent",s.disbursements],["Cash on Hand (End)",s.cash_on_hand_end_period],
+         ["Direct Contributions to Candidates",s.contributions_candidates],["Independent Expenditures",s.independent_expenditures],
+         ["Transfers In",s.transfers_from_affiliated],["Debts Owed",s.debts_owed_by_committee]]
+        .map(([l,v])=>`<div class="sum-row"><span style="color:#aaa;">${l}</span><span style="color:#7dd87d;font-weight:700;">${fmt(v)}</span></div>`).join("")+`</div>`;
+    } else {
+      html+=`<div class="card"><div class="empty">No summary data available for cycle ${S.cycle}.</div></div>`;
+    }
   }
+
   document.getElementById("results").innerHTML=html;
 }
 
 function setPacTab(t){S.activeTab=t;rerender();}
 
-async function loadSum(id){
-  try{
-    const data=await api(`${FEC}/committee/${id}/totals/?cycle=${S.cycle}&api_key=${getKey()}`);
-    const s=data.results?.[0];
-    if(!s){document.getElementById("sumArea").innerHTML=`<div class="card"><div class="empty">No summary data.</div></div>`;return;}
-    document.getElementById("sumArea").innerHTML=`<div class="card">`+
-      [["Total Raised",s.receipts],["Total Spent",s.disbursements],["Cash on Hand",s.cash_on_hand_end_period],
-       ["Contributions to Candidates",s.contributions_candidates],["Independent Expenditures",s.independent_expenditures],
-       ["Transfers In",s.transfers_from_affiliated],["Debts Owed",s.debts_owed_by_committee]]
-      .map(([l,v])=>`<div class="sum-row"><span style="color:#888;">${l}</span><span style="color:#7dd87d;font-weight:700;">${fmt(v)}</span></div>`).join("")+`</div>`;
-  }catch(e){document.getElementById("sumArea").innerHTML=`<div class="error-box">Summary error: ${e.message}</div>`;}
-}
-
 // ── Candidate ─────────────────────────────────────────────────────────────────
 function renderCandidate(r){
   const cand=r.candidate;
-  const pacRows=sorted(r.pacRows,"total");
-  const indivRows=sorted(r.indivRows,"total");
+  const pacSorted=sorted(r.pacRows,"total");
+  const indivSorted=sorted(r.indivRows,"total");
   const tabs=[["pac","PAC CONTRIBUTIONS"],["individuals","INDIVIDUAL DONORS $1k+"]];
+
   let html=`
     <div class="res-title">${cand.name}${partyBadge(cand.party)}</div>
     <div class="res-meta">${cand.candidate_id} · ${cand.office_full||""} · ${cand.state||""} · CYCLE ${S.cycle}</div>
     ${tabBar(tabs,S.activeTab,"setCandTab")}`;
+
   if(S.activeTab==="pac"){
     html+=`<div class="card"><table>
-      <thead><tr><th>CONTRIBUTOR / PAC</th><th class="r">TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
-    if(!pacRows.length) html+=`<tr><td colspan="3" class="empty">No PAC contribution data found.</td></tr>`;
-    pacRows.forEach(row=>html+=`<tr>
-      <td style="color:#ddd;">${row.contributor_name||"—"}</td>
+      <thead><tr><th>PAC / CONTRIBUTOR</th><th class="r">TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
+    if(!pacSorted.length) html+=`<tr><td colspan="3" class="empty">No PAC contribution data found for cycle ${S.cycle}.</td></tr>`;
+    pacSorted.forEach(row=>html+=`<tr>
+      <td class="name">${row.contributor_name||"—"}</td>
       <td class="amt">${fmt(row.total)}</td><td class="dim">${row.count||"—"}</td></tr>`);
     html+=`</tbody></table></div>`;
   }
-  if(S.activeTab==="individuals") html+=indivTable(indivRows);
+  if(S.activeTab==="individuals") html+=indivTable(indivSorted);
+
   document.getElementById("results").innerHTML=html;
 }
 
 function setCandTab(t){S.activeTab=t;rerender();}
 
-// ── Individual donors table (shared) ─────────────────────────────────────────
+// ── Individual donors table ───────────────────────────────────────────────────
 function indivTable(rows){
   let html=`<div class="card"><table>
     <thead><tr><th>DONOR</th><th>EMPLOYER / OCCUPATION</th><th class="r">CYCLE TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
-  if(!rows.length) html+=`<tr><td colspan="4" class="empty">No individual contributions ≥ $1,000 found. Try a real API key if on DEMO_KEY.</td></tr>`;
+  if(!rows.length) html+=`<tr><td colspan="4" class="empty">No individual contributions ≥ $1,000 found. Try a real API key if using DEMO_KEY.</td></tr>`;
   rows.forEach((row,i)=>{
-    const key="d_"+i, exp=S.expanded.has(key), multi=row.txns?.length>1;
+    const key="d_"+i,exp=S.expanded.has(key),multi=row.txns?.length>1;
     html+=`<tr class="${multi?"click":""}" onclick="${multi?`toggleExp('${key}')`:""}">
-      <td><span class="expand-icon">${multi?(exp?"▼":"▶"):" "}</span><span style="color:#ddd;">${row.name}</span>
-        <div style="font-size:10px;color:#555;margin-left:16px;">${row.state||""}</div></td>
-      <td class="sm">${row.employer||"—"}<br/><span style="color:#555;">${row.occupation||""}</span></td>
+      <td><span class="expand-icon">${multi?(exp?"▼":"▶"):" "}</span><span class="name">${row.name}</span>
+        <div style="font-size:10px;color:#666;margin-left:16px;">${row.state||""}</div></td>
+      <td class="sm">${row.employer||"—"}<br/><span style="color:#666;">${row.occupation||""}</span></td>
       <td class="amt">${fmt(row.total)}</td>
       <td class="dim">${row.txns?.length||1}</td>
     </tr>`;
@@ -634,7 +694,6 @@ function indivTable(rows){
 
 function toggleExp(key){S.expanded.has(key)?S.expanded.delete(key):S.expanded.add(key);rerender();}
 
-// ── Go ────────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
