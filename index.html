@@ -138,7 +138,7 @@ td.name{color:#e8e8e8;}
       <div style="flex:1;">
         <label>SELECT COUNTRY OF ORIGIN</label>
         <select id="countrySelect" style="width:100%;" onchange="onCountryChange()">
-          <option value="">— loading FARA database... —</option>
+          <option value="">— choose a country —</option>
         </select>
       </div>
       <div style="padding-top:18px;">
@@ -263,6 +263,17 @@ function init(){
     pacChipsEl.appendChild(ch);
   });
 
+  // Populate dropdown immediately on load
+  const sel=document.getElementById("countrySelect");
+  sel.innerHTML='<option value="">— choose a country —</option>';
+  QUICK_COUNTRIES.forEach(c=>{
+    const opt=document.createElement("option");
+    opt.value=c; opt.textContent=c;
+    sel.appendChild(opt);
+  });
+  document.getElementById("foreignBtn").disabled=false;
+  document.getElementById("faraStatus").textContent="SELECT A COUNTRY AND CLICK ANALYZE — FARA DATA FETCHED ON DEMAND";
+
   QUICK_COUNTRIES.forEach(c=>{
     const ch=document.createElement("span");
     ch.className="chip"; ch.textContent=c;
@@ -274,7 +285,6 @@ function init(){
     document.getElementById("countryChips").appendChild(ch);
   });
 
-  loadFARAData();
 }
 
 function renderCycleBar(){
@@ -322,18 +332,16 @@ function setMode(m){
 }
 
 // ── FARA Load ─────────────────────────────────────────────────────────────────
-async function loadFARAData(){
-  if(S.faraLoaded||S.faraLoading)return;
-  S.faraLoading=true;
+async function loadFARAForCountry(country){
+  if(S.faraByCountry[country]) return S.faraByCountry[country];
   const status=document.getElementById("faraStatus");
-  status.textContent="LOADING FARA DATABASE FROM DOJ...";
+  status.textContent=`FETCHING FARA AGENTS FOR ${country}...`;
   try{
     const regData=await api(`${FARA}/Registrants/json/Active`);
     const registrants=(regData?.REGISTRANTS_ACTIVE?.ROW)||[];
-    const byCountry={};
+    const agents=[];
     const total=registrants.length;
     let done=0;
-
     for(let i=0;i<registrants.length;i+=4){
       const batch=registrants.slice(i,i+4);
       await Promise.all(batch.map(async reg=>{
@@ -343,52 +351,31 @@ async function loadFARAData(){
           const arr=Array.isArray(fps)?fps:[fps];
           arr.forEach(fp=>{
             if(!fp||!fp.Country)return;
-            const country=fp.Country.toUpperCase().trim();
-            if(!byCountry[country])byCountry[country]=[];
-            byCountry[country].push({
+            if(fp.Country.toUpperCase().trim()!==country)return;
+            agents.push({
               registrant_name:reg.Name,
               registration_number:reg.Registration_Number,
               registrant_city:reg.City,
               registrant_state:reg.State,
               principal_name:fp.Foreign_Principal||fp.Name||"—",
               country,
-              registration_date:fp.Registration_Date||reg.Registration_Date,
             });
           });
         }catch(e){}
         done++;
       }));
-      const pct=Math.round(done/total*100);
-      status.textContent=`LOADING FARA... ${pct}% (${done}/${total} registrants scanned)`;
+      status.textContent=`SCANNING FARA FOR ${country}... ${Math.round(done/total*100)}% (${done}/${total})`;
       await sleep(2200);
     }
-
-    S.faraByCountry=byCountry;
-    S.faraLoaded=true;
-
-    const sel=document.getElementById("countrySelect");
-    sel.innerHTML=`<option value="">— choose a country —</option>`;
-    Object.keys(byCountry).sort().forEach(c=>{
-      const opt=document.createElement("option");
-      opt.value=c; opt.textContent=`${c}  (${byCountry[c].length} agents)`;
-      sel.appendChild(opt);
-    });
-
-    const totalAgents=Object.values(byCountry).reduce((a,b)=>a+b.length,0);
-    status.textContent=`✓ FARA LOADED — ${registrants.length} registrants · ${totalAgents} principal relationships · ${Object.keys(byCountry).length} countries`;
-    document.getElementById("foreignBtn").disabled=false;
+    S.faraByCountry[country]=agents;
+    status.textContent=agents.length>0
+      ?`✓ FARA: ${agents.length} registered agents found for ${country}`
+      :`✓ FARA scan complete — no active registrants found for ${country}`;
+    return agents;
   }catch(e){
-    status.textContent=`⚠ FARA unavailable (CORS): ${e.message}. Country quick-select will show linked PACs only.`;
-    const sel=document.getElementById("countrySelect");
-    sel.innerHTML=`<option value="">— choose a country —</option>`;
-    QUICK_COUNTRIES.forEach(c=>{
-      const opt=document.createElement("option");
-      opt.value=c; opt.textContent=c;
-      sel.appendChild(opt);
-    });
-    document.getElementById("foreignBtn").disabled=false;
+    status.textContent=`⚠ FARA unavailable: ${e.message}`;
+    return [];
   }
-  S.faraLoading=false;
 }
 
 function onCountryChange(){
@@ -403,7 +390,7 @@ async function loadForeignInfluence(){
   clearRes(); setErr(null); setLoad(true);
 
   try{
-    const agents=(S.faraByCountry[country])||[];
+    const agents=await loadFARAForCountry(country);
     const linkedPacs=KNOWN_PACS.filter(p=>p.country===country);
 
     // Load PAC direct contributions + independent expenditures for linked PACs
