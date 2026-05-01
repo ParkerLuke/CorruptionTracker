@@ -37,7 +37,8 @@ select option{background:#1c1c1c;color:#e0e0e0;}
 .mode-btn.active{background:#1c1c1c;color:#f0e040;font-weight:700;}
 .mode-btn:hover:not(.active){color:#bbb;}
 
-.card{background:#181818;border:1px solid #333;border-radius:4px;overflow:hidden;}
+.card{background:#181818;border:1px solid #333;border-radius:4px;}
+.table-wrap{overflow-x:auto;overflow-y:auto;max-height:600px;border-radius:4px;}
 .card-hdr{padding:8px 14px;font-size:10px;color:#888;letter-spacing:1px;border-bottom:1px solid #252525;}
 
 label{font-size:10px;color:#888;letter-spacing:1px;display:block;margin-bottom:4px;}
@@ -595,7 +596,7 @@ function renderForeign(r){
       html+=`<div class="info-box">No linked PACs found for ${r.country} in this tool's database. Try the PAC / Committee tab to search by name, or select a different country.</div>`;
     }
     html+=`<div style="font-size:10px;color:#666;margin-bottom:8px;letter-spacing:1px;">PACs: ${r.linkedPacs.map(p=>p.label).join(" · ")}</div>`;
-    html+=`<div class="card"><table>
+    html+=`<div class="card"><div class="table-wrap"><table>
       <thead><tr><th>POLITICIAN / RECIPIENT</th><th class="r">DIRECT $</th><th class="r">IE SUPPORT $</th><th class="r">IE OPPOSE $</th><th class="r">TOTAL</th></tr></thead><tbody>`;
     if(!recSorted.length) html+=`<tr><td colspan="5" class="empty">No recipient data found for ${r.country} in cycle ${S.cycle}. PACs may not have filed yet or used a different cycle.</td></tr>`;
     recSorted.forEach(row=>{
@@ -607,11 +608,11 @@ function renderForeign(r){
         <td class="amt">${fmt(row.total)}</td>
       </tr>`;
     });
-    html+=`</tbody></table></div>`;
+    html+=`</tbody></table></div></div>`;
   }
 
   if(S.activeTab==="agents"){
-    html+=`<div class="card"><table>
+    html+=`<div class="card"><div class="table-wrap"><table>
       <thead><tr><th>US REGISTRANT (AGENT)</th><th>FOREIGN PRINCIPAL</th><th>COUNTRY</th></tr></thead><tbody>`;
     if(!r.agents.length) html+=`<tr><td colspan="3" class="empty">No FARA registrants loaded for ${r.country}. FARA database may still be loading — check the status bar above.</td></tr>`;
     r.agents.forEach(a=>{
@@ -621,7 +622,7 @@ function renderForeign(r){
         <td><span class="cpill">${r.country}</span></td>
       </tr>`;
     });
-    html+=`</tbody></table></div>`;
+    html+=`</tbody></table></div></div>`;
   }
 
   document.getElementById("results").innerHTML=html;
@@ -657,7 +658,7 @@ function renderPac(r){
   html+=tabBar(tabs,S.activeTab,"setPacTab");
 
   if(S.activeTab==="recipients"){
-    html+=`<div class="card"><table>
+    html+=`<div class="card"><div class="table-wrap"><table>
       <thead><tr>
         <th>POLITICIAN / RECIPIENT</th>
         <th class="r">DIRECT $</th>
@@ -675,7 +676,7 @@ function renderPac(r){
         <td class="amt">${fmt(row.total)}</td>
       </tr>`;
     });
-    html+=`</tbody></table></div>`;
+    html+=`</tbody></table></div></div>`;
   }
   if(S.activeTab==="individuals") html+=indivTable(indivSorted);
   if(S.activeTab==="summary"){
@@ -708,13 +709,13 @@ function renderCandidate(r){
     ${tabBar(tabs,S.activeTab,"setCandTab")}`;
 
   if(S.activeTab==="pac"){
-    html+=`<div class="card"><table>
+    html+=`<div class="card"><div class="table-wrap"><table>
       <thead><tr><th>PAC / CONTRIBUTOR</th><th class="r">TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
     if(!pacSorted.length) html+=`<tr><td colspan="3" class="empty">No PAC contribution data found for cycle ${S.cycle}.</td></tr>`;
     pacSorted.forEach(row=>html+=`<tr>
       <td class="name">${row.contributor_name||"—"}</td>
       <td class="amt">${fmt(row.total)}</td><td class="dim">${row.count||"—"}</td></tr>`);
-    html+=`</tbody></table></div>`;
+    html+=`</tbody></table></div></div>`;
   }
   if(S.activeTab==="individuals") html+=indivTable(indivSorted);
 
@@ -725,7 +726,7 @@ function setCandTab(t){S.activeTab=t;rerender();}
 
 // ── Individual donors table ───────────────────────────────────────────────────
 function indivTable(rows){
-  let html=`<div class="card"><table>
+  let html=`<div class="card"><div class="table-wrap"><table>
     <thead><tr><th>DONOR</th><th>EMPLOYER / OCCUPATION</th><th class="r">CYCLE TOTAL</th><th class="r">TXNS</th></tr></thead><tbody>`;
   if(!rows.length) html+=`<tr><td colspan="4" class="empty">No individual contributions ≥ $1,000 found. Try a real API key if using DEMO_KEY.</td></tr>`;
   rows.forEach((row,i)=>{
@@ -744,7 +745,7 @@ function indivTable(rows){
         <td class="amt">${fmt(t.amount)}</td><td></td></tr>`;
     });
   });
-  return html+`</tbody></table></div>`;
+  return html+`</tbody></table></div></div>`;
 }
 
 function toggleExp(key){S.expanded.has(key)?S.expanded.delete(key):S.expanded.add(key);rerender();}
