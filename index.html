@@ -220,7 +220,7 @@ const QUICK_COUNTRIES = ["ISRAEL","SAUDI ARABIA","CHINA","UNITED ARAB EMIRATES",
 
 const S = {
   mode:"foreign", cycle:2024, sortDir:"desc",
-  expanded:new Set(), activeTab:null, currentResults:null,
+  expanded:new Set(), activeTab:null, currentResults:null, recipientView:'supported',
   faraByCountry:{}, faraLoaded:false, faraLoading:false,
 };
 
@@ -550,9 +550,63 @@ function rerender(){
   else renderCandidate(r);
 }
 
+// ── Shared recipient toggle table ────────────────────────────────────────────
+function recipientToggleHtml(rows, pacLabel){
+  const supported = rows.filter(r => r.direct > 0 || r.ie_support > 0);
+  const opposed   = rows.filter(r => r.ie_oppose > 0);
+  const view = S.recipientView;
+  const activeRows = sorted(view === 'supported' ? supported : opposed, 'total');
+
+  const key = `<div style="display:flex;gap:18px;margin-bottom:10px;flex-wrap:wrap;">
+    <span style="font-size:10px;color:#888;"><span style="color:#9dd89d;font-weight:700;">DIRECT $</span> — paid directly to candidate's committee (max $5k/election)</span>
+    <span style="font-size:10px;color:#888;"><span style="color:#7dd87d;font-weight:700;">IE SUPPORT $</span> — unlimited outside spending <em>for</em> candidate</span>
+    <span style="font-size:10px;color:#888;"><span style="color:#e07070;font-weight:700;">IE OPPOSE $</span> — unlimited outside spending <em>against</em> candidate</span>
+  </div>`;
+
+  const toggle = `<div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;">
+    <button class="btn-ghost${view==='supported'?' active':''}" onclick="setRecipView('supported')">
+      ✅ SUPPORTED (${supported.length})
+    </button>
+    <button class="btn-ghost${view==='opposed'?' active':''}" style="${view==='opposed'?'':'border-color:#5c2a2a;color:#e07070;'}" onclick="setRecipView('opposed')">
+      ❌ OPPOSED (${opposed.length})
+    </button>
+    ${pacLabel ? `<span style="font-size:10px;color:#555;margin-left:4px;">via: ${pacLabel}</span>` : ''}
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+      <span style="font-size:10px;color:#777;letter-spacing:1px;">SORT</span>
+      <button class="btn-ghost active btn-sm" onclick="toggleSort()">${S.sortDir==="desc"?"▼ HIGH → LOW":"▲ LOW → HIGH"}</button>
+    </div>
+  </div>`;
+
+  let table = `<div class="card"><div class="table-wrap"><table>`;
+  if(view === 'supported'){
+    table += `<thead><tr><th>POLITICIAN</th><th class="r">DIRECT $</th><th class="r">IE SUPPORT $</th><th class="r">TOTAL SUPPORT</th></tr></thead><tbody>`;
+    if(!activeRows.length) table += `<tr><td colspan="4" class="empty">No supported politicians found for this cycle.</td></tr>`;
+    activeRows.forEach(row => {
+      table += `<tr>
+        <td class="name">${row.name}</td>
+        <td class="r" style="color:#9dd89d;">${row.direct>0?fmt(row.direct):"—"}</td>
+        <td class="r" style="color:#7dd87d;">${row.ie_support>0?fmt(row.ie_support):"—"}</td>
+        <td class="amt">${fmt(row.direct+row.ie_support)}</td>
+      </tr>`;
+    });
+  } else {
+    table += `<thead><tr><th>POLITICIAN</th><th class="r">IE OPPOSE $</th></tr></thead><tbody>`;
+    if(!activeRows.length) table += `<tr><td colspan="2" class="empty">No opposed politicians found for this cycle.</td></tr>`;
+    activeRows.forEach(row => {
+      table += `<tr>
+        <td class="name">${row.name}</td>
+        <td class="r" style="color:#e07070;font-weight:700;">${fmt(row.ie_oppose)}</td>
+      </tr>`;
+    });
+  }
+  table += `</tbody></table></div></div>`;
+  return key + toggle + table;
+}
+
+function setRecipView(v){ S.recipientView=v; rerender(); }
+
 // ── Foreign ───────────────────────────────────────────────────────────────────
 function renderForeign(r){
-  const recSorted=sorted(r.recipients,"total");
   const totalDirect=r.recipients.reduce((a,b)=>a+b.direct,0);
   const totalIE=r.recipients.reduce((a,b)=>a+b.ie_support+b.ie_oppose,0);
   const totalAll=totalDirect+totalIE;
@@ -577,20 +631,7 @@ function renderForeign(r){
     if(!r.linkedPacs.length){
       html+=`<div class="info-box">No linked PACs found for ${r.country} in this tool's database. Try the PAC / Committee tab to search by name, or select a different country.</div>`;
     }
-    html+=`<div style="font-size:10px;color:#666;margin-bottom:8px;letter-spacing:1px;">PACs: ${r.linkedPacs.map(p=>p.label).join(" · ")}</div>`;
-    html+=`<div class="card"><div class="table-wrap"><table>
-      <thead><tr><th>POLITICIAN / RECIPIENT</th><th class="r">DIRECT $</th><th class="r">IE SUPPORT $</th><th class="r">IE OPPOSE $</th><th class="r">TOTAL</th></tr></thead><tbody>`;
-    if(!recSorted.length) html+=`<tr><td colspan="5" class="empty">No recipient data found for ${r.country} in cycle ${S.cycle}. PACs may not have filed yet or used a different cycle.</td></tr>`;
-    recSorted.forEach(row=>{
-      html+=`<tr>
-        <td class="name">${row.name}</td>
-        <td class="r" style="color:#9dd89d;">${row.direct>0?fmt(row.direct):"—"}</td>
-        <td class="r" style="color:#7dd87d;">${row.ie_support>0?fmt(row.ie_support):"—"}</td>
-        <td class="r" style="color:#e07070;">${row.ie_oppose>0?fmt(row.ie_oppose):"—"}</td>
-        <td class="amt">${fmt(row.total)}</td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
+    html+=recipientToggleHtml(r.recipients, r.linkedPacs.map(p=>p.label).join(" · "));
   }
 
   if(S.activeTab==="agents"){
@@ -614,7 +655,6 @@ function setForeignTab(t){S.activeTab=t;rerender();}
 
 // ── PAC Render ────────────────────────────────────────────────────────────────
 function renderPac(r){
-  const recSorted=sorted(r.recipients,"total");
   const indivSorted=sorted(r.indivRows,"total");
   const s=r.summary;
 
@@ -640,25 +680,7 @@ function renderPac(r){
   html+=tabBar(tabs,S.activeTab,"setPacTab");
 
   if(S.activeTab==="recipients"){
-    html+=`<div class="card"><div class="table-wrap"><table>
-      <thead><tr>
-        <th>POLITICIAN / RECIPIENT</th>
-        <th class="r">DIRECT $</th>
-        <th class="r">IE SUPPORT $</th>
-        <th class="r">IE OPPOSE $</th>
-        <th class="r">TOTAL</th>
-      </tr></thead><tbody>`;
-    if(!recSorted.length) html+=`<tr><td colspan="5" class="empty">No recipient data found for cycle ${S.cycle}. This PAC may primarily use independent expenditures — try a different cycle or check the Committee Totals tab.</td></tr>`;
-    recSorted.forEach(row=>{
-      html+=`<tr>
-        <td class="name">${row.name}</td>
-        <td class="r" style="color:#9dd89d;">${row.direct>0?fmt(row.direct):"—"}</td>
-        <td class="r" style="color:#7dd87d;">${row.ie_support>0?fmt(row.ie_support):"—"}</td>
-        <td class="r" style="color:#e07070;">${row.ie_oppose>0?fmt(row.ie_oppose):"—"}</td>
-        <td class="amt">${fmt(row.total)}</td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
+    html+=recipientToggleHtml(r.recipients, r.name);
   }
   if(S.activeTab==="individuals") html+=indivTable(indivSorted);
   if(S.activeTab==="summary"){
