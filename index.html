@@ -397,13 +397,12 @@ async function loadForeignInfluence(){
     const pacResults=[];
     for(const pac of linkedPacs){
       try{
-        const [contribH,contribS,ieData]=await Promise.all([
-          api(`${FEC}/schedules/schedule_b/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=H&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
-          api(`${FEC}/schedules/schedule_b/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=S&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
-          api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${pac.id}&cycle=${S.cycle}&per_page=100&sort=-total&api_key=${getKey()}`).catch(()=>({results:[]})),
+        const [disbData,ieData]=await Promise.all([
+          api(`${FEC}/schedules/schedule_b/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&per_page=100&sort=-disbursement_amount&api_key=${getKey()}`).catch(()=>({results:[]})),
+          api(`${FEC}/schedules/schedule_e/?committee_id=${pac.id}&two_year_transaction_period=${S.cycle}&per_page=100&sort=-expenditure_amount&api_key=${getKey()}`).catch(()=>({results:[]})),
         ]);
-        const disbRows=[...(contribH.results||[]),...(contribS.results||[])].map(r=>({
-          recipient_name:r.recipient_name,
+        const disbRows=(disbData.results||[]).map(r=>({
+          recipient_name:r.recipient_name||r.payee_name,
           recipient_id:r.recipient_committee_id,
           total:r.disbursement_amount,
           count:1,
@@ -424,12 +423,12 @@ async function loadForeignInfluence(){
         if(!allRecipients[k].pacs.includes(pac.label)) allRecipients[k].pacs.push(pac.label);
       });
       ieRows.forEach(r=>{
-        const k=r.candidate_name||"UNKNOWN";
+        const k=r.candidate_name||r.payee_name||"UNKNOWN";
         if(!allRecipients[k]) allRecipients[k]={name:k,id:r.candidate_id,direct:0,ie_support:0,ie_oppose:0,pacs:[],txns:0};
-        const amt=Number(r.total)||0;
+        const amt=Number(r.expenditure_amount)||Number(r.total)||0;
         if((r.support_oppose_indicator||"").toUpperCase()==="S") allRecipients[k].ie_support+=amt;
         else allRecipients[k].ie_oppose+=amt;
-        allRecipients[k].txns+=Number(r.count)||0;
+        allRecipients[k].txns+=1;
         if(!allRecipients[k].pacs.includes(pac.label)) allRecipients[k].pacs.push(pac.label);
       });
     });
@@ -473,19 +472,15 @@ async function loadPacById(id,name,note,country){
     // schedule_e = independent expenditures by candidate
     // schedule_a = individual donors to this PAC
     const [contribData,ieData,indivData,sumData]=await Promise.all([
-      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=H&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
-      api(`${FEC}/schedules/schedule_e/by_candidate/?committee_id=${id}&cycle=${S.cycle}&per_page=100&sort=-total&api_key=${getKey()}`).catch(()=>({results:[]})),
-      api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`),
+      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&per_page=100&sort=-disbursement_amount&api_key=${getKey()}`).catch(()=>({results:[]})),
+      api(`${FEC}/schedules/schedule_e/?committee_id=${id}&two_year_transaction_period=${S.cycle}&per_page=100&sort=-expenditure_amount&api_key=${getKey()}`).catch(()=>({results:[]})),
+      api(`${FEC}/schedules/schedule_a/?committee_id=${id}&min_amount=1000&two_year_transaction_period=${S.cycle}&per_page=100&is_individual=true&sort=-contribution_receipt_amount&api_key=${getKey()}`).catch(()=>({results:[]})),
       api(`${FEC}/committee/${id}/totals/?cycle=${S.cycle}&api_key=${getKey()}`).catch(()=>({results:[]})),
     ]);
 
-    // Also fetch Senate + Presidential contributions
-    const [contribS,contribP]=await Promise.all([
-      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=S&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
-      api(`${FEC}/schedules/schedule_b/?committee_id=${id}&two_year_transaction_period=${S.cycle}&recipient_committee_type=P&per_page=100&api_key=${getKey()}`).catch(()=>({results:[]})),
-    ]);
-
-    const allContribs=[...(contribData.results||[]),...(contribS.results||[]),...(contribP.results||[])];
+    // Fetch all schedule_b (direct contributions to candidates) and schedule_e (IE) raw
+    // Then aggregate by candidate name on our side
+    const allContribs=[...(contribData.results||[])];
 
     // Merge direct contributions + IE into unified recipients list
     const recMap={};
@@ -496,12 +491,12 @@ async function loadPacById(id,name,note,country){
       recMap[k].count+=1;
     });
     (ieData.results||[]).forEach(r=>{
-      const k=r.candidate_name||"UNKNOWN";
+      const k=r.candidate_name||r.payee_name||"UNKNOWN";
       if(!recMap[k]) recMap[k]={name:k,id:r.candidate_id,direct:0,ie_support:0,ie_oppose:0,count:0};
-      const amt=Number(r.total)||0;
+      const amt=Number(r.expenditure_amount)||Number(r.total)||0;
       if((r.support_oppose_indicator||"").toUpperCase()==="S") recMap[k].ie_support+=amt;
       else recMap[k].ie_oppose+=amt;
-      recMap[k].count+=Number(r.count)||0;
+      recMap[k].count+=1;
     });
     const recipients=Object.values(recMap).map(r=>({...r,total:r.direct+r.ie_support+r.ie_oppose}));
 
