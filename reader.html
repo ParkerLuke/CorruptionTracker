@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Claude Repo Reader</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Courier New',monospace;background:#0d0d0d;color:#d8d8d8;min-height:100vh;padding:24px;}
+h1{font-size:14px;color:#f0e040;letter-spacing:3px;margin-bottom:20px;font-weight:700;}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+input{background:#1c1c1c;border:1px solid #383838;color:#e0e0e0;padding:8px 12px;font-size:13px;border-radius:4px;outline:none;font-family:'Courier New',monospace;flex:1;}
+input:focus{border-color:#666;}
+button{background:#f0e040;color:#000;border:none;border-radius:4px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;white-space:nowrap;}
+button:hover{background:#ffe000;}
+button:disabled{background:#2a2a2a;color:#666;cursor:default;}
+#status{font-size:11px;color:#777;letter-spacing:1px;margin-bottom:16px;min-height:16px;}
+#status.ok{color:#7dd87d;}
+#status.err{color:#e07070;}
+.file-block{margin-bottom:24px;border:1px solid #252525;border-radius:4px;}
+.file-hdr{background:#141414;padding:8px 14px;font-size:11px;color:#f0e040;letter-spacing:1px;border-bottom:1px solid #252525;display:flex;justify-content:space-between;align-items:center;}
+.file-hdr span{color:#555;font-size:10px;}
+pre{padding:14px;font-size:11px;line-height:1.6;color:#ccc;white-space:pre-wrap;word-break:break-all;max-height:none;overflow:visible;}
+.meta{font-size:10px;color:#555;letter-spacing:1px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1a1a1a;}
+</style>
+</head>
+<body>
+
+<h1>CLAUDE REPO READER</h1>
+
+<div class="row">
+  <input type="text" id="repo" placeholder="owner/repo  (e.g. ParkerLuke/CorruptionTracker)" value="ParkerLuke/CorruptionTracker"/>
+  <input type="text" id="branch" placeholder="branch" value="main" style="flex:0 0 100px;"/>
+  <button onclick="load()" id="btn">LOAD</button>
+</div>
+
+<div id="status">ENTER REPO AND CLICK LOAD</div>
+<div id="out"></div>
+
+<script>
+async function load(){
+  const repo = document.getElementById('repo').value.trim();
+  const branch = document.getElementById('branch').value.trim() || 'main';
+  if(!repo) return;
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  const out = document.getElementById('out');
+  btn.disabled = true;
+  out.innerHTML = '';
+  status.className = '';
+  status.textContent = 'FETCHING FILE TREE...';
+
+  try{
+    // Get file tree recursively
+    const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`);
+    if(!treeRes.ok) throw new Error(`Tree fetch failed: ${treeRes.status} ${treeRes.statusText}`);
+    const treeData = await treeRes.json();
+    const files = (treeData.tree || []).filter(f => f.type === 'blob');
+
+    status.textContent = `FOUND ${files.length} FILES — FETCHING CONTENTS...`;
+
+    // Filter to text-readable files (skip binaries)
+    const skip = /\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|zip|gz|mp4|mp3|webp)$/i;
+    const textFiles = files.filter(f => !skip.test(f.path));
+
+    // Fetch all file contents
+    const results = await Promise.all(textFiles.map(async f => {
+      try{
+        const r = await fetch(`https://raw.githubusercontent.com/${repo}/${branch}/${f.path}`);
+        const text = await r.text();
+        return { path: f.path, size: f.size, content: text };
+      }catch(e){
+        return { path: f.path, size: f.size, content: `[ERROR READING FILE: ${e.message}]` };
+      }
+    }));
+
+    // Build output — structured for easy Claude reading
+    const ts = new Date().toISOString();
+    let html = `<div class="meta">REPO: ${repo} &nbsp;·&nbsp; BRANCH: ${branch} &nbsp;·&nbsp; FILES: ${results.length} &nbsp;·&nbsp; FETCHED: ${ts}</div>`;
+
+    results.forEach(f => {
+      const lines = f.content.split('\n').length;
+      html += `<div class="file-block">
+        <div class="file-hdr">📄 ${f.path} <span>${lines} lines · ${(f.size/1024).toFixed(1)}kb</span></div>
+        <pre>${escHtml(f.content)}</pre>
+      </div>`;
+    });
+
+    out.innerHTML = html;
+    status.className = 'ok';
+    status.textContent = `✓ LOADED ${results.length} FILES FROM ${repo} @ ${branch}`;
+  }catch(e){
+    status.className = 'err';
+    status.textContent = `✗ ERROR: ${e.message}`;
+  }
+  btn.disabled = false;
+}
+
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Auto-load on page open
+load();
+</script>
+</body>
+</html>
